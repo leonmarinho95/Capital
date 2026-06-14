@@ -120,3 +120,41 @@
 .btn-excluir{width:100%;margin-top:14px;padding:12px;background:var(--red-soft);border:1px solid rgba(224,114,107,.3);
   border-radius:var(--r-md);color:var(--red);font:500 14px var(--body);cursor:pointer}
 
+
+/* ===== Visão anual ===== */
+.periodo-seg{max-width:280px;margin:0 auto 16px}
+.muted.neg{color:var(--red)}
+
+/* gráfico de linha (patrimônio) */
+.linha-wrap{width:100%}
+.linha-svg{width:100%;aspect-ratio:600/200;height:auto;display:block;overflow:visible}
+.linha-traco{fill:none;stroke:var(--teal);stroke-width:2.5;vector-effect:non-scaling-stroke;
+  stroke-linejoin:round;stroke-linecap:round}
+.linha-area{fill:var(--teal-glow);stroke:none}
+.linha-zero{stroke:var(--line);stroke-width:1;stroke-dasharray:4 4;vector-effect:non-scaling-stroke}
+.linha-dot{fill:var(--teal);stroke:var(--surface-1);stroke-width:2}
+.linha-labels{display:flex;justify-content:space-between;margin-top:6px}
+.linha-labels span{font-size:11px;color:var(--txt-mute)}
+.linha-labels span.vazio{flex:1}
+
+/* resumo grid */
+.resumo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.resumo-item{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:var(--r-md);padding:12px 14px;display:flex;flex-direction:column;gap:5px}
+.resumo-label{font-size:11.5px;color:var(--txt-mute);text-transform:uppercase;letter-spacing:.04em}
+.resumo-val{font-size:16px;font-weight:600}
+.resumo-val.pos{color:var(--teal)}
+.resumo-val.neg{color:var(--red)}
+
+/* ganhos x gastos */
+.legenda{display:flex;gap:12px;font-size:11.5px}
+.leg-in,.leg-out{display:flex;align-items:center;gap:5px;color:var(--txt-dim)}
+.leg-in::before,.leg-out::before{content:'';width:9px;height:9px;border-radius:2px}
+.leg-in::before{background:var(--teal)}
+.leg-out::before{background:var(--red)}
+.gg-chart{display:flex;align-items:flex-end;gap:6px;height:150px;overflow-x:auto;padding-bottom:4px}
+.gg-col{flex:1;min-width:30px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.gg-track{width:100%;height:120px;display:flex;align-items:flex-end;justify-content:center;gap:3px}
+.gg-in,.gg-out{width:42%;border-radius:4px 4px 0 0}
+.gg-in{background:linear-gradient(180deg,var(--teal),var(--teal-deep))}
+.gg-out{background:linear-gradient(180deg,var(--red),#b5564f)}
+.gg-lbl{font-size:10.5px;color:var(--txt-mute)}
