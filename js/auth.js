@@ -23,7 +23,8 @@ export async function entrar(email, senha) {
   try {
     await signInWithEmailAndPassword(auth, email.trim(), senha);
   } catch (e) {
-    throw new Error(MENSAGENS[e.code] || 'Não foi possível entrar.');
+    // erro mapeado -> mensagem amigável; não mapeado -> mostra o código para diagnóstico
+    throw new Error(MENSAGENS[e.code] || `Não foi possível entrar (${e.code || 'erro desconhecido'}).`);
   }
 }
 

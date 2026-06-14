@@ -1,4 +1,4 @@
-const CACHE='capital-v2';
+const CACHE='capital-v4';
 const ASSETS=['./','./index.html','./css/base.css','./css/app.css','./manifest.json',
  './js/app.js','./js/firebase.js','./js/config.js','./js/auth.js','./js/repository.js',
  './js/state.js','./js/selectors.js','./js/services.js','./js/validation.js',

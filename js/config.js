@@ -2,10 +2,10 @@
 // Console Firebase > Configurações do projeto > Seus apps > Web.
 // Pode ir para o GitHub: estas chaves são públicas por design.
 export const firebaseConfig = {
-  apiKey:            "SUA_API_KEY",
-  authDomain:        "SEU_PROJETO.firebaseapp.com",
-  projectId:         "SEU_PROJETO",
-  storageBucket:     "SEU_PROJETO.appspot.com",
-  messagingSenderId: "SEU_SENDER_ID",
-  appId:             "SEU_APP_ID"
+  apiKey:            "AIzaSyBWay1YVEZGGEpiIqfbg2z-hPKatN-FRwo",
+  authDomain:        "financa-pessoal-5609d.firebaseapp.com",
+  projectId:         "financa-pessoal-5609d",
+  storageBucket:     "financa-pessoal-5609d.firebasestorage.app",
+  messagingSenderId: "489113149318",
+  appId:             "1:489113149318:web:619cf12bf35f56d253d607"
 };

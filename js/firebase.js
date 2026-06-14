@@ -4,7 +4,9 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import {
-  getFirestore, enableIndexedDbPersistence
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 import { firebaseConfig } from './config.js';
@@ -12,8 +14,9 @@ import { firebaseConfig } from './config.js';
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
-export const db = getFirestore(app);
 
-// Cache offline: o app continua exibindo os últimos dados sem rede.
-// Falha silenciosa em múltiplas abas (limitação conhecida do Firestore).
-enableIndexedDbPersistence(db).catch(() => {});
+// Cache offline com a API atual (substitui enableIndexedDbPersistence).
+// persistentMultipleTabManager: funciona com o app aberto em várias abas.
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+});
