@@ -7,6 +7,7 @@ import { rotuloMes } from './dates.js';
 import { salvarLancamento, excluirLancamento } from './services.js';
 import { renderPainel } from './ui/painel.js';
 import { renderGastos, renderGanhos, renderFixos } from './ui/listas.js';
+import { renderAnual } from './ui/anual.js';
 import { iniciarModal, abrirNovo, abrirEdicao } from './ui/modal.js';
 
 let unsubscribers = []; // listeners do Firestore, limpos no logout
@@ -104,4 +105,5 @@ function renderizar() {
   else if (abaAtiva === 'gastos') renderGastos($('#aba-gastos'), e, aoEditar);
   else if (abaAtiva === 'ganhos') renderGanhos($('#aba-ganhos'), e, aoEditar);
   else if (abaAtiva === 'fixos') renderFixos($('#aba-fixos'), e);
+  else if (abaAtiva === 'anual') renderAnual($('#aba-anual'), e);
 }
