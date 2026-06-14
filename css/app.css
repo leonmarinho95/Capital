@@ -118,8 +118,3 @@
 .btn-excluir{width:100%;margin-top:14px;padding:12px;background:var(--red-soft);border:1px solid rgba(224,114,107,.3);
   border-radius:var(--r-md);color:var(--red);font:500 14px var(--body);cursor:pointer}
 
-/* botão temporário de migração (remover após uso) */
-.btn-migrar{width:100%;margin-bottom:16px;padding:12px;border:1px dashed var(--teal-deep);
-  border-radius:var(--r-md);background:rgba(77,182,164,.08);color:var(--teal);
-  font:500 13px var(--body);cursor:pointer}
-.btn-migrar:disabled{opacity:.6;cursor:default}
