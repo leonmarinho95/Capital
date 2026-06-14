@@ -56,11 +56,13 @@
 .bar-fill.cur{background:linear-gradient(180deg,var(--teal),var(--teal-deep))}
 .bar span{font-size:11px;color:var(--txt-mute)}
 
-/* treemap */
-.treemap{display:flex;flex-wrap:wrap;gap:7px}
-.tm{border-radius:11px;padding:12px 13px;min-height:58px;display:flex;flex-direction:column;justify-content:space-between;
-  font-size:12px;font-weight:700;color:#0e1411;letter-spacing:.01em}
-.tm span{font-size:11px;font-weight:600;opacity:.82}
+
+
+/* treemap (squarified, áreas proporcionais) */
+.treemap-wrap{width:100%}
+.treemap-svg{width:100%;height:auto;display:block}
+.tm-nome{font:700 11px var(--body);letter-spacing:.01em}
+.tm-val{font:600 10px var(--body);opacity:.9}
 
 /* rows (listas) */
 .rows{display:flex;flex-direction:column}
