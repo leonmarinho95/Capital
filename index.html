@@ -113,6 +113,44 @@
   </div>
 </div>
 
+<!-- MODAL FIXO -->
+<div id="modal-fixo" class="modal-overlay hidden">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3 id="modal-fixo-titulo">Editar gasto fixo</h3>
+    <div class="campo">
+      <label for="fx-gasto">Nome</label>
+      <input class="input" type="text" id="fx-gasto" placeholder="Ex.: CONDOMÍNIO">
+    </div>
+    <div class="campo">
+      <label for="fx-categoria">Categoria</label>
+      <select class="input" id="fx-categoria"></select>
+    </div>
+    <div class="campo">
+      <label for="fx-vencimento">Dia do vencimento (1 a 31)</label>
+      <input class="input" type="number" inputmode="numeric" min="1" max="31" id="fx-vencimento" placeholder="10">
+    </div>
+    <div class="campo">
+      <label class="check-label">
+        <input type="checkbox" id="fx-variavel"> Valor varia todo mês (A definir)
+      </label>
+    </div>
+    <div class="campo" id="fx-campo-valor">
+      <label for="fx-valor">Valor (R$)</label>
+      <input class="input" type="text" inputmode="decimal" id="fx-valor" placeholder="0,00">
+    </div>
+    <div class="campo">
+      <label for="fx-fatura">Forma / recebimento da fatura</label>
+      <input class="input" type="text" id="fx-fatura" placeholder="Ex.: DÉBITO AUTOMÁTICO">
+    </div>
+    <p class="modal-msg" id="modal-fixo-msg"></p>
+    <div class="modal-acoes">
+      <button class="btn btn-ghost" id="modal-fixo-cancelar">Cancelar</button>
+      <button class="btn btn-primary" id="modal-fixo-salvar">Salvar</button>
+    </div>
+    <button class="btn-excluir hidden" id="modal-fixo-excluir">Excluir gasto fixo</button>
+  </div>
+</div>
+
 <script type="module" src="js/app.js"></script>
 <script>
 if ('serviceWorker' in navigator) {

@@ -91,14 +91,24 @@ export function renderGanhos(container, estado, aoEditar) {
   container.replaceChildren(cartao('Ganhos do mês', formatar(t.ganhos), corpo));
 }
 
-export function renderFixos(container, estado) {
+export function renderFixos(container, estado, aoEditarFixo, aoNovoFixo) {
   const lista = [...estado.fixos].sort((a, b) => (Number(a.vencimento) || 0) - (Number(b.vencimento) || 0));
   const corpo = lista.length
     ? el('div', { class: 'rows' }, lista.map((f) => {
-        const valor = Number.isInteger(f.valor) ? formatar(f.valor) : (f.valorTexto || 'A definir');
-        const sub = [f.vencimento ? `vence dia ${f.vencimento}` : null, f.fatura].filter(Boolean).join(' · ');
-        return linha({ cor: 'var(--teal-deep)', titulo: f.gasto, sub, valor });
+        const valor = Number.isInteger(f.valor) ? formatar(f.valor) : 'A definir';
+        const sub = [f.vencimento ? `vence dia ${f.vencimento}` : null, f.categoria, f.fatura].filter(Boolean).join(' · ');
+        return linha({
+          cor: 'var(--teal-deep)', titulo: f.gasto, sub, valor,
+          onClick: aoEditarFixo ? () => aoEditarFixo(f.id) : null
+        });
       }))
-    : vazio('Sem gastos fixos.');
-  container.replaceChildren(cartao('Gastos fixos mensais', null, corpo));
+    : vazio('Nenhum gasto fixo. Toque em + para adicionar.');
+
+  const botaoNovo = el('button', { class: 'btn-add-fixo' }, '+ Adicionar gasto fixo');
+  if (aoNovoFixo) botaoNovo.addEventListener('click', aoNovoFixo);
+
+  container.replaceChildren(
+    cartao('Gastos fixos mensais', null, corpo),
+    botaoNovo
+  );
 }

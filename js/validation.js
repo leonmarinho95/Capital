@@ -44,4 +44,32 @@ export function validarGanho({ tipo, valorCentavos, data }) {
   return { ok: true, dados: { tipo: tipo.trim().toUpperCase(), valor: valorCentavos, data } };
 }
 
+/**
+ * Valida e normaliza um gasto fixo (recorrente).
+ * valorCentavos pode ser null -> fixo de valor variável ("A definir").
+ * vencimento: dia do mês 1..31. categoria: uma das CATEGORIAS.
+ */
+export function validarFixo({ gasto, categoria, valorCentavos, vencimento, fatura }) {
+  if (!gasto || !gasto.trim()) return falha('Informe o nome do gasto fixo.');
+  if (!CATEGORIAS.includes(categoria)) return falha('Categoria inválida.');
+  const dia = Number(vencimento);
+  if (!Number.isInteger(dia) || dia < 1 || dia > 31) return falha('Dia de vencimento inválido (1 a 31).');
+  // valor é opcional: null = variável ("A definir")
+  let valor = null;
+  if (valorCentavos != null) {
+    if (!Number.isInteger(valorCentavos) || valorCentavos < 0) return falha('Valor inválido.');
+    valor = valorCentavos;
+  }
+  return {
+    ok: true,
+    dados: {
+      gasto: gasto.trim().toUpperCase(),
+      categoria,
+      valor,                 // número (centavos) ou null
+      vencimento: dia,
+      fatura: (fatura || '').trim()
+    }
+  };
+}
+
 const falha = (erro) => ({ ok: false, erro });

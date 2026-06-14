@@ -4,11 +4,13 @@ import { observarSessao, entrar, sair } from './auth.js';
 import * as estado from './state.js';
 import * as repo from './repository.js';
 import { rotuloMes } from './dates.js';
-import { salvarLancamento, excluirLancamento } from './services.js';
+import { salvarLancamento, excluirLancamento, salvarFixo, excluirFixo } from './services.js';
 import { renderPainel } from './ui/painel.js';
 import { renderGastos, renderGanhos, renderFixos } from './ui/listas.js';
 import { renderAnual } from './ui/anual.js';
 import { iniciarModal, abrirNovo, abrirEdicao } from './ui/modal.js';
+import { iniciarModalFixo, abrirNovoFixo, abrirEdicaoFixo } from './ui/modal-fixo.js';
+import { dataISOLocal } from './vencimentos.js';
 
 let unsubscribers = []; // listeners do Firestore, limpos no logout
 let abaAtiva = 'painel';
@@ -79,13 +81,37 @@ iniciarModal({
   onSalvar: (tipo, id, dados) => salvarLancamento(estado.obter().uid, tipo, id, dados),
   onExcluir: (tipo, id) => excluirLancamento(estado.obter().uid, tipo, id)
 });
-$('#fab').addEventListener('click', abrirNovo);
+iniciarModalFixo({
+  onSalvar: (id, dados) => salvarFixo(estado.obter().uid, id, dados),
+  onExcluir: (id) => excluirFixo(estado.obter().uid, id)
+});
+
+// O botão + abre o modal certo conforme a aba ativa.
+$('#fab').addEventListener('click', () => {
+  if (abaAtiva === 'fixos') abrirNovoFixo();
+  else abrirNovo();
+});
 
 function aoEditar(tipo, id) {
   const e = estado.obter();
   const colecao = tipo === 'gasto' ? e.gastos : e.ganhos;
   const item = colecao.find((x) => x.id === id);
   if (item) abrirEdicao(tipo, item);
+}
+
+function aoEditarFixo(id) {
+  const item = estado.obter().fixos.find((x) => x.id === id);
+  if (item) abrirEdicaoFixo(item);
+}
+
+// "Lançar" de um vencimento: abre o modal de gasto pré-preenchido.
+function aoLancarVencimento(v) {
+  abrirNovo({
+    conta: v.gasto,
+    categoria: v.categoria || 'COMPRAS',
+    valor: Number.isInteger(v.valor) ? (v.valor / 100) : null,
+    data: dataISOLocal(v.dataVenc)
+  });
 }
 
 // ---------- RENDER ----------
@@ -101,9 +127,9 @@ function renderizar() {
     return;
   }
 
-  if (abaAtiva === 'painel') renderPainel($('#aba-painel'), e);
+  if (abaAtiva === 'painel') renderPainel($('#aba-painel'), e, aoLancarVencimento);
   else if (abaAtiva === 'gastos') renderGastos($('#aba-gastos'), e, aoEditar);
   else if (abaAtiva === 'ganhos') renderGanhos($('#aba-ganhos'), e, aoEditar);
-  else if (abaAtiva === 'fixos') renderFixos($('#aba-fixos'), e);
+  else if (abaAtiva === 'fixos') renderFixos($('#aba-fixos'), e, aoEditarFixo, abrirNovoFixo);
   else if (abaAtiva === 'anual') renderAnual($('#aba-anual'), e);
 }

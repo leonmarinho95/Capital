@@ -4,11 +4,12 @@ import { formatar, formatarCompacto } from '../money.js';
 import { rotuloMes } from '../dates.js';
 import { corDaCategoria } from '../validation.js';
 import { squarify, agruparPequenos } from './treemap.js';
+import { vencendoEmBreve, rotuloProximidade } from '../vencimentos.js';
 import {
   totaisDoMes, economiaMesAnterior, serieGastos, gastosPorCategoria
 } from '../selectors.js';
 
-export function renderPainel(container, estado) {
+export function renderPainel(container, estado, aoLancarVencimento) {
   if (estado.carregando) {
     container.replaceChildren(vazio('Carregando…'));
     return;
@@ -29,7 +30,36 @@ export function renderPainel(container, estado) {
     miniCard('out', 'Gastos', t.gastos)
   ]);
 
-  container.replaceChildren(hero, duo, cardBarras(estado), cardCategorias(estado));
+  const filhos = [hero, duo];
+  const alertas = cardVencimentos(estado, aoLancarVencimento);
+  if (alertas) filhos.push(alertas);
+  filhos.push(cardBarras(estado), cardCategorias(estado));
+  container.replaceChildren(...filhos);
+}
+
+// Bloco "Vencem em breve" — só aparece se houver vencimentos na janela.
+function cardVencimentos(estado, aoLancar) {
+  const proximos = vencendoEmBreve(estado.fixos, new Date(), 5);
+  if (proximos.length === 0) return null;
+
+  const itens = proximos.map((v) => {
+    const valorTxt = Number.isInteger(v.valor) ? formatar(v.valor) : 'valor a confirmar';
+    const info = el('div', { class: 'venc-info' }, [
+      el('div', { class: 'venc-nome' }, v.gasto),
+      el('div', { class: 'venc-sub' }, `${rotuloProximidade(v.emDias)} · ${valorTxt}`)
+    ]);
+    const btn = el('button', { class: 'venc-lancar' }, 'Lançar');
+    if (aoLancar) btn.addEventListener('click', () => aoLancar(v));
+    return el('div', { class: 'venc-row' }, [
+      el('span', { class: `venc-dot ${v.emDias <= 1 ? 'urgente' : ''}` }),
+      info, btn
+    ]);
+  });
+
+  return el('section', { class: 'card card-venc' }, [
+    el('div', { class: 'card-head' }, [el('h2', {}, 'Vencem em breve')]),
+    el('div', { class: 'venc-list' }, itens)
+  ]);
 }
 
 function deltaNode(delta) {

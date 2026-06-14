@@ -45,15 +45,17 @@ export function iniciarModal({ onSalvar, onExcluir }) {
   ctx = { onSalvar, onExcluir };
 }
 
-export function abrirNovo() {
+export function abrirNovo(prefill = null) {
   ctx = { ...ctx, tipo: 'gasto', id: null };
-  $('#modal-titulo').textContent = 'Novo lançamento';
+  $('#modal-titulo').textContent = prefill ? 'Lançar vencimento' : 'Novo lançamento';
   $('#modal-excluir').classList.add('hidden');
   $('#seg-tipo').classList.remove('hidden');
   definirTipo('gasto');
-  $('#in-conta').value = ''; $('#in-valor').value = ''; $('#in-obs').value = '';
-  $('#in-categoria').value = 'COMPRAS';
-  $('#in-data').value = hoje();
+  $('#in-conta').value = prefill?.conta || '';
+  $('#in-valor').value = prefill?.valor != null ? String(prefill.valor).replace('.', ',') : '';
+  $('#in-obs').value = '';
+  $('#in-categoria').value = prefill?.categoria || 'COMPRAS';
+  $('#in-data').value = prefill?.data || hoje();
   msg('');
   mostrar();
 }
