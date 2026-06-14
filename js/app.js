@@ -8,6 +8,7 @@ import { salvarLancamento, excluirLancamento } from './services.js';
 import { renderPainel } from './ui/painel.js';
 import { renderGastos, renderGanhos, renderFixos } from './ui/listas.js';
 import { iniciarModal, abrirNovo, abrirEdicao } from './ui/modal.js';
+import { migrarParaCentavos } from './migracao.js'; // TEMPORÁRIO: remover após migração
 
 let unsubscribers = []; // listeners do Firestore, limpos no logout
 let abaAtiva = 'painel';
@@ -104,4 +105,24 @@ function renderizar() {
   else if (abaAtiva === 'gastos') renderGastos($('#aba-gastos'), e, aoEditar);
   else if (abaAtiva === 'ganhos') renderGanhos($('#aba-ganhos'), e, aoEditar);
   else if (abaAtiva === 'fixos') renderFixos($('#aba-fixos'), e);
+}
+
+// ---------- MIGRAÇÃO (TEMPORÁRIO — remover este bloco após usar) ----------
+const btnMigrar = document.getElementById('btn-migrar');
+if (btnMigrar) {
+  btnMigrar.addEventListener('click', async () => {
+    if (!confirm('Converter os valores existentes para o novo formato (centavos)?\n\nUm backup será baixado antes. Faça apenas uma vez.')) return;
+    btnMigrar.disabled = true;
+    btnMigrar.textContent = 'Migrando…';
+    try {
+      const uid = estado.obter().uid;
+      const r = await migrarParaCentavos(uid);
+      alert(`Migração concluída.\nConvertidos: ${r.convertidos}\nPreservados (texto): ${r.marcados}\nJá migrados: ${r.pulados}`);
+      btnMigrar.textContent = 'Migração concluída ✓';
+    } catch (e) {
+      alert('Erro na migração: ' + (e.message || e));
+      btnMigrar.disabled = false;
+      btnMigrar.textContent = 'Migrar valores';
+    }
+  });
 }
