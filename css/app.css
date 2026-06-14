@@ -60,7 +60,7 @@
 
 /* treemap (squarified, áreas proporcionais) */
 .treemap-wrap{width:100%}
-.treemap-svg{width:100%;height:auto;display:block}
+.treemap-svg{width:100%;aspect-ratio:600/220;height:auto;display:block}
 .tm-nome{font:700 11px var(--body);letter-spacing:.01em}
 .tm-val{font:600 10px var(--body);opacity:.9}
 
