@@ -1,0 +1,129 @@
+/* ============================================================
+   Cofre — design system
+   Escuro, sóbrio, minimalista. Destaque único em teal.
+   Números tabulares para valores (alinhamento de planilha).
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Inter:wght@400;500;600&display=swap');
+
+:root{
+  /* superfícies */
+  --bg:#13151a;
+  --surface-1:#1a1d24;
+  --surface-2:#22262f;
+  --surface-3:#2b303b;
+  --line:#2f3540;
+  --line-soft:#262b34;
+
+  /* texto */
+  --txt:#e8eaed;
+  --txt-dim:#a4abb8;
+  --txt-mute:#6e7480;
+
+  /* marca / semântica */
+  --teal:#4db6a4;
+  --teal-deep:#3a9483;
+  --teal-glow:rgba(77,182,164,.16);
+  --red:#e0726b;
+  --red-soft:rgba(224,114,107,.14);
+
+  /* tipografia */
+  --display:'Bricolage Grotesque',system-ui,sans-serif;
+  --body:'Inter',system-ui,sans-serif;
+
+  --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px;
+  --shadow:0 8px 30px rgba(0,0,0,.4);
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--body);
+  background:var(--bg);
+  color:var(--txt);
+  -webkit-font-smoothing:antialiased;
+  line-height:1.45;
+}
+.hidden{display:none!important}
+
+/* números tabulares — valores alinhados como planilha */
+.tnum{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;letter-spacing:-.01em}
+
+/* ---------- LOGIN ---------- */
+.auth{
+  min-height:100dvh;
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+  background:
+    radial-gradient(900px 500px at 50% -15%, #1b2630 0%, transparent 60%),
+    var(--bg);
+}
+.auth-card{
+  width:100%;max-width:380px;
+  background:linear-gradient(180deg,var(--surface-1),#16191f);
+  border:1px solid var(--line);
+  border-radius:var(--r-xl);
+  padding:40px 28px 32px;
+  box-shadow:var(--shadow);
+}
+.brand{display:flex;flex-direction:column;align-items:center;gap:16px;margin-bottom:28px}
+.brand-mark{
+  width:60px;height:60px;border-radius:18px;
+  display:grid;place-items:center;
+  background:
+    linear-gradient(160deg,var(--teal),var(--teal-deep));
+  box-shadow:0 6px 20px var(--teal-glow);
+  position:relative;
+}
+/* cadeado minimalista desenhado em CSS — a "assinatura" da marca */
+.brand-mark::before{
+  content:"";width:22px;height:16px;border-radius:4px;
+  background:var(--bg);margin-top:6px;
+}
+.brand-mark::after{
+  content:"";position:absolute;top:16px;
+  width:14px;height:14px;border:3px solid var(--bg);
+  border-bottom:none;border-radius:8px 8px 0 0;
+}
+.brand-name{
+  font-family:var(--display);font-weight:700;font-size:26px;
+  letter-spacing:-.02em;
+}
+.brand-tag{color:var(--txt-mute);font-size:13.5px;margin-top:-8px}
+
+.field-group{display:flex;flex-direction:column;gap:12px}
+.input{
+  width:100%;padding:14px 15px;
+  background:var(--surface-2);
+  border:1px solid var(--line);
+  border-radius:var(--r-md);
+  color:var(--txt);font-size:15px;font-family:var(--body);
+  transition:border-color .15s var(--ease),background .15s var(--ease);
+}
+.input::placeholder{color:var(--txt-mute)}
+.input:focus{outline:none;border-color:var(--teal);background:var(--surface-3)}
+
+.btn{
+  width:100%;padding:14px;border:none;border-radius:var(--r-md);
+  font-family:var(--body);font-size:15px;font-weight:600;cursor:pointer;
+  transition:transform .12s var(--ease),filter .15s var(--ease);
+}
+.btn:active{transform:scale(.985)}
+.btn-primary{
+  color:#08110f;
+  background:linear-gradient(160deg,var(--teal),var(--teal-deep));
+}
+.btn-primary:hover{filter:brightness(1.05)}
+.btn-primary:disabled{filter:saturate(.4) brightness(.8);cursor:default}
+
+.auth-msg{min-height:20px;font-size:13px;margin-top:14px;text-align:center;color:var(--red)}
+.auth-foot{margin-top:22px;text-align:center;font-size:12px;color:var(--txt-mute)}
+
+/* atalho de acessibilidade */
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* marca em imagem (ícone do app) */
+.brand-img{border-radius:18px;display:block;object-fit:cover}
+.brand-img.sm{border-radius:8px}

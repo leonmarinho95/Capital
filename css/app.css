@@ -1,0 +1,119 @@
+/* ============================================================
+   Cofre — app shell e componentes das telas internas
+   ============================================================ */
+
+.app-shell{max-width:680px;margin:0 auto;padding-bottom:150px;position:relative}
+
+/* topbar */
+.topbar{
+  position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:14px 16px;
+  background:rgba(19,21,26,.82);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line-soft);
+}
+.topbar-brand{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:-.01em}
+.brand-mark.sm{width:26px;height:26px;border-radius:8px}
+.brand-mark.sm::before{width:10px;height:7px;border-radius:2px;margin-top:3px}
+.brand-mark.sm::after{top:7px;width:7px;height:7px;border-width:2px;border-radius:4px 4px 0 0}
+
+.month-pill{display:flex;align-items:center;gap:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:4px}
+.month-pill button{width:28px;height:28px;border:none;border-radius:999px;background:transparent;color:var(--txt-dim);font-size:17px;line-height:1;cursor:pointer}
+.month-pill button:active{background:var(--surface-3)}
+.month-pill span{min-width:84px;text-align:center;font-size:13.5px;font-weight:600}
+.icon-btn{width:36px;height:36px;border:1px solid var(--line);border-radius:10px;background:var(--surface-1);color:var(--txt-dim);display:grid;place-items:center;cursor:pointer}
+.icon-btn:active{background:var(--surface-2)}
+
+.content{padding:18px 16px}
+
+/* hero — assinatura visual */
+.hero{padding:8px 4px 22px;text-align:center}
+.hero-label{font-size:12.5px;color:var(--txt-mute);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.hero-value{font-family:var(--display);font-weight:700;font-size:42px;letter-spacing:-.025em;line-height:1}
+.hero-delta{margin-top:10px;font-size:13px;font-weight:500}
+.hero-delta.up{color:var(--teal)}
+.hero-delta.down{color:var(--red)}
+
+/* duo cards ganhos/gastos */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.mini{background:var(--surface-1);border:1px solid var(--line-soft);border-radius:var(--r-md);padding:14px 16px;display:flex;flex-direction:column;gap:5px}
+.mini-label{font-size:12px;color:var(--txt-mute);text-transform:uppercase;letter-spacing:.05em}
+.mini-val{font-size:18px;font-weight:600}
+.mini.in .mini-val{color:var(--teal)}
+.mini.out .mini-val{color:var(--red)}
+
+/* cards */
+.card{background:var(--surface-1);border:1px solid var(--line-soft);border-radius:var(--r-lg);padding:18px;margin-bottom:16px}
+.card-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+.card-head h2{font-family:var(--display);font-size:15px;font-weight:600;letter-spacing:-.01em}
+.muted{color:var(--txt-mute);font-size:12.5px}
+
+/* bar chart */
+.bars{display:flex;align-items:flex-end;gap:10px;height:150px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px}
+.bar-track{width:100%;height:118px;display:flex;align-items:flex-end}
+.bar-fill{width:62%;margin:0 auto;border-radius:5px 5px 0 0;background:linear-gradient(180deg,#3a4250,#2c333f)}
+.bar-fill.cur{background:linear-gradient(180deg,var(--teal),var(--teal-deep))}
+.bar span{font-size:11px;color:var(--txt-mute)}
+
+/* treemap */
+.treemap{display:flex;flex-wrap:wrap;gap:7px}
+.tm{border-radius:11px;padding:12px 13px;min-height:58px;display:flex;flex-direction:column;justify-content:space-between;
+  font-size:12px;font-weight:700;color:#0e1411;letter-spacing:.01em}
+.tm span{font-size:11px;font-weight:600;opacity:.82}
+
+/* rows (listas) */
+.rows{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:13px;padding:13px 4px;border-bottom:1px solid var(--line-soft);cursor:pointer}
+.row:last-child{border-bottom:none}
+.row:active{background:var(--surface-2)}
+.row-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.row-body{flex:1;min-width:0}
+.row-title{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-sub{font-size:12px;color:var(--txt-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.row-amount{font-size:14px;font-weight:600;white-space:nowrap}
+.row-amount.out{color:var(--red)}
+.row-amount.in{color:var(--teal)}
+
+/* tabbar */
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;max-width:680px;margin:0 auto;
+  background:rgba(19,21,26,.9);backdrop-filter:blur(16px);border-top:1px solid var(--line-soft);padding:8px}
+.tab{flex:1;background:none;border:none;color:var(--txt-mute);font:500 11px var(--body);
+  display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px;cursor:pointer}
+.tab.on{color:var(--teal)}
+
+.fab{position:fixed;right:20px;bottom:84px;z-index:25;width:56px;height:56px;border:none;border-radius:50%;
+  font-size:28px;color:#08110f;background:linear-gradient(160deg,var(--teal),var(--teal-deep));
+  box-shadow:0 8px 24px rgba(0,0,0,.45),0 0 0 1px rgba(77,182,164,.2);cursor:pointer}
+@media(min-width:680px){.fab{right:calc(50% - 320px)}}
+
+/* filtros (tela gastos) */
+.filterbar{display:flex;gap:10px;margin-bottom:16px}
+.filterbar .input{flex:1;padding:11px 12px;font-size:14px}
+
+/* estado vazio / carregando */
+.estado-vazio{text-align:center;color:var(--txt-mute);padding:34px 0;font-size:14px}
+
+/* hero negativo */
+.hero-value.neg{color:var(--red)}
+
+/* modal */
+.modal-overlay{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(3px)}
+.modal{width:100%;max-width:680px;background:var(--surface-1);border:1px solid var(--line);
+  border-radius:var(--r-xl) var(--r-xl) 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));
+  max-height:92dvh;overflow:auto;animation:subir .26s var(--ease)}
+@keyframes subir{from{transform:translateY(40px);opacity:.5}to{transform:none;opacity:1}}
+.modal h3{font-family:var(--display);font-size:18px;font-weight:600;margin-bottom:18px}
+.seg{display:flex;gap:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-md);padding:4px;margin-bottom:18px}
+.seg button{flex:1;padding:11px;border:none;border-radius:9px;background:transparent;color:var(--txt-mute);font:600 14px var(--body);cursor:pointer}
+.seg button.on{background:var(--surface-3);color:var(--txt)}
+.campo{margin-bottom:15px}
+.campo label{display:block;font-size:12px;color:var(--txt-mute);margin-bottom:7px}
+.modal-msg{min-height:18px;font-size:13px;color:var(--red);margin-bottom:6px}
+.modal-acoes{display:flex;gap:10px}
+.modal-acoes .btn{flex:1}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+.btn-ghost:hover{background:var(--surface-2)}
+.btn-excluir{width:100%;margin-top:14px;padding:12px;background:var(--red-soft);border:1px solid rgba(224,114,107,.3);
+  border-radius:var(--r-md);color:var(--red);font:500 14px var(--body);cursor:pointer}

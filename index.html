@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#13151a">
+<title>Capital</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="tela-auth" class="auth">
+  <div class="auth-card">
+    <div class="brand">
+      <img class="brand-img" src="assets/icon-192.png" alt="Capital" width="60" height="60">
+      <div class="brand-name">Capital</div>
+      <div class="brand-tag">Suas contas, no seu controle</div>
+    </div>
+    <div class="field-group">
+      <input class="input" type="email" id="auth-email" placeholder="E-mail" autocomplete="email">
+      <input class="input" type="password" id="auth-senha" placeholder="Senha" autocomplete="current-password">
+      <button class="btn btn-primary" id="auth-entrar">Entrar</button>
+    </div>
+    <p class="auth-msg" id="auth-msg"></p>
+    <div class="auth-foot">Acesso restrito · seus dados são privados</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="tela-app" class="app-shell hidden">
+  <header class="topbar">
+    <div class="topbar-brand"><img class="brand-img sm" src="assets/icon-192.png" alt="" width="26" height="26">Capital</div>
+    <div class="month-pill">
+      <button id="mes-ant" aria-label="Mês anterior">‹</button>
+      <span id="mes-rotulo">—</span>
+      <button id="mes-prox" aria-label="Próximo mês">›</button>
+    </div>
+    <button class="icon-btn" id="btn-sair" aria-label="Sair">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+    </button>
+  </header>
+
+  <main class="content">
+    <section id="aba-painel" class="aba"></section>
+    <section id="aba-gastos" class="aba hidden"></section>
+    <section id="aba-ganhos" class="aba hidden"></section>
+    <section id="aba-fixos" class="aba hidden"></section>
+  </main>
+
+  <nav class="tabbar">
+    <button class="tab on" data-aba="painel">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Painel
+    </button>
+    <button class="tab" data-aba="gastos">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>Gastos
+    </button>
+    <button class="tab" data-aba="ganhos">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Ganhos
+    </button>
+    <button class="tab" data-aba="fixos">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7M21 3v6h-6"/></svg>Fixos
+    </button>
+  </nav>
+
+  <button class="fab" id="fab" aria-label="Novo lançamento">+</button>
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="modal-overlay hidden">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3 id="modal-titulo">Novo lançamento</h3>
+    <div class="seg" id="seg-tipo">
+      <button data-tipo="gasto" class="on">Gasto</button>
+      <button data-tipo="ganho">Ganho</button>
+    </div>
+    <div class="campo" id="campo-categoria">
+      <label for="in-categoria">Categoria</label>
+      <select class="input" id="in-categoria"></select>
+    </div>
+    <div class="campo">
+      <label for="in-conta" id="label-conta">Conta</label>
+      <input class="input" type="text" id="in-conta" placeholder="Ex.: UBER">
+    </div>
+    <div class="campo">
+      <label for="in-valor">Valor</label>
+      <input class="input" type="text" inputmode="decimal" id="in-valor" placeholder="0,00">
+    </div>
+    <div class="campo">
+      <label for="in-data">Data</label>
+      <input class="input" type="date" id="in-data">
+    </div>
+    <div class="campo" id="campo-obs">
+      <label for="in-obs">Observação</label>
+      <input class="input" type="text" id="in-obs" placeholder="opcional">
+    </div>
+    <p class="modal-msg" id="modal-msg"></p>
+    <div class="modal-acoes">
+      <button class="btn btn-ghost" id="modal-cancelar">Cancelar</button>
+      <button class="btn btn-primary" id="modal-salvar">Salvar</button>
+    </div>
+    <button class="btn-excluir hidden" id="modal-excluir">Excluir lançamento</button>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
