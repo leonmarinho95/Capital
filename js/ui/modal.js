@@ -4,7 +4,7 @@ import { $ } from './dom.js';
 import { CATEGORIAS } from '../validation.js';
 import { reaisParaCentavos, centavosParaReais } from '../money.js';
 import { hoje } from '../dates.js';
-import { faturaDaCompra, rotuloFatura } from '../cartao.js';
+import { faturaMesDaCompra, rotuloFatura } from '../cartao.js';
 
 let ctx = null; // {tipo, id|null, onSalvar, onExcluir}
 let formaAtual = 'debito';
@@ -68,12 +68,13 @@ export function abrirNovo(prefill = null) {
   $('#in-categoria').value = prefill?.categoria || 'COMPRAS';
   $('#in-data').value = prefill?.data || hoje();
   definirForma(prefill?.forma || 'debito');
+  $('#campo-fatura').classList.add('hidden');
   msg('');
   mostrar();
 }
 
 export function abrirEdicao(tipo, item) {
-  ctx = { ...ctx, tipo, id: item.id };
+  ctx = { ...ctx, tipo, id: item.id, item };
   $('#modal-titulo').textContent = 'Editar lançamento';
   $('#modal-excluir').classList.remove('hidden');
   $('#seg-tipo').classList.add('hidden');
@@ -85,6 +86,17 @@ export function abrirEdicao(tipo, item) {
     $('#in-categoria').value = item.categoria || 'COMPRAS';
     $('#in-obs').value = item.obs || '';
     definirForma(item.forma || 'debito');
+    // crédito: permite corrigir a fatura (mês de pagamento)
+    const ehCredito = item.forma === 'credito';
+    $('#campo-fatura').classList.toggle('hidden', !ehCredito);
+    if (ehCredito) {
+      const fm = item.faturaMes || (item.data ? item.data.slice(0, 7) : '');
+      $('#in-fatura').value = fm;
+      const hint = $('#fatura-hint');
+      if (hint) hint.textContent = item.parcelasTotal > 1
+        ? `Parcela ${item.parcela}/${item.parcelasTotal} — mover ajusta esta e as seguintes`
+        : 'Corrija se esta compra caiu na fatura errada';
+    }
   } else {
     $('#in-conta').value = item.tipo || '';
   }
@@ -137,8 +149,8 @@ function atualizarHintParcela() {
   }
   // fatura de destino (auto-preenchimento informativo)
   if (cfg.fechamento && /^\d{4}-\d{2}-\d{2}$/.test(data)) {
-    const fech = faturaDaCompra(data, cfg.fechamento, cfg.excecoes || {});
-    partes.push(`1ª na ${rotuloFatura(fech)}`);
+    const fm = faturaMesDaCompra(data, cfg.fechamento, cfg.excecoes || {});
+    partes.push(`1ª na ${rotuloFatura(fm)}`);
   } else if (!cfg.fechamento) {
     partes.push('configure o fechamento do cartão na aba Cartão');
   }
@@ -148,17 +160,22 @@ function atualizarHintParcela() {
 function coletar() {
   const valorCentavos = reaisParaCentavos($('#in-valor').value);
   if (ctx.tipo === 'gasto') {
-    return {
+    const dados = {
       valorCentavos,
       data: $('#in-data').value,
       conta: $('#in-conta').value,
       categoria: $('#in-categoria').value,
       forma: formaAtual,
       obs: $('#in-obs').value,
-      // parcelas só para crédito em lançamento novo; senão 1
       parcelas: (formaAtual === 'credito' && !ctx.id)
         ? Math.max(1, parseInt($('#in-parcelas').value, 10) || 1) : 1
     };
+    // edição de crédito: fatura escolhida (mês de pagamento)
+    if (ctx.id && formaAtual === 'credito') {
+      const fm = $('#in-fatura').value;
+      if (/^\d{4}-\d{2}$/.test(fm)) dados.faturaMesEscolhida = fm;
+    }
+    return dados;
   }
   return { tipo: $('#in-conta').value, valorCentavos, data: $('#in-data').value };
 }

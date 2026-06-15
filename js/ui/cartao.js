@@ -3,7 +3,7 @@ import { el, vazio } from './dom.js';
 import { formatar } from '../money.js';
 import { diaMes } from '../dates.js';
 import { corDaCategoria } from '../validation.js';
-import { gastosPorFatura, faturaAtual, rotuloFatura, faturaDaCompra } from '../cartao.js';
+import { gastosPorFatura, faturaMesAtual, rotuloFatura } from '../cartao.js';
 
 // navegação entre faturas: offset 0 = atual, -1 = anterior, +1 = próxima
 const nav = { offset: 0 };
@@ -22,9 +22,9 @@ export function renderCartao(container, estado, aoSalvarConfig, aoNovoCredito, a
   const excecoes = cfg.excecoes || {};
   const mapa = gastosPorFatura(estado.gastos, fechamento, excecoes);
 
-  // lista de faturas ordenada (chaves = data de fechamento)
+  // lista de faturas ordenada (chaves = mês da fatura 'YYYY-MM')
   const chaves = [...mapa.keys()].sort();
-  const atual = faturaAtual(fechamento, new Date(), excecoes);
+  const atual = faturaMesAtual(fechamento, new Date(), excecoes);
   // garante que a fatura atual exista na navegação mesmo se vazia
   if (!chaves.includes(atual)) { chaves.push(atual); chaves.sort(); }
   const idxAtual = chaves.indexOf(atual);
@@ -85,28 +85,28 @@ function blocoConfig(estado, aoSalvarConfig, destaque) {
   const inVenc = el('input', { class: 'input', type: 'number', min: '1', max: '31', value: cfg.vencimento ?? 8, placeholder: 'ex.: 8' });
   const msg = el('p', { class: 'modal-msg' });
 
-  // editor de exceções (mês AAAA-MM + dia)
+  // editor de exceções: fatura (mês) -> data completa de fechamento
   const listaExc = el('div', { class: 'exc-list' });
   function pintarExcecoes() {
-    const linhas = Object.entries(excecoes).sort().map(([mes, dia]) =>
+    const linhas = Object.entries(excecoes).sort().map(([mes, dataFech]) =>
       el('div', { class: 'exc-row' }, [
-        el('span', {}, `${mes} → fecha dia ${dia}`),
+        el('span', {}, `${rotuloFatura(mes)} fechou em ${diaMes(dataFech)}`),
         el('button', { class: 'exc-del', onclick: () => { delete excecoes[mes]; pintarExcecoes(); } }, '✕')
       ]));
-    listaExc.replaceChildren(...(linhas.length ? linhas : [el('span', { class: 'muted' }, 'Sem exceções. Usa o padrão todo mês.')]));
+    listaExc.replaceChildren(...(linhas.length ? linhas : [el('span', { class: 'muted' }, 'Sem exceções. Usa o padrão.')]));
   }
   pintarExcecoes();
 
-  const inExcMes = el('input', { class: 'input', type: 'month', style: 'flex:1' });
-  const inExcDia = el('input', { class: 'input', type: 'number', min: '1', max: '31', placeholder: 'dia', style: 'width:80px' });
-  const btnAddExc = el('button', { class: 'btn-add-fixo', style: 'margin:0' }, '+ Adicionar exceção');
+  const inExcMes = el('input', { class: 'input', type: 'month', style: 'flex:1', 'aria-label': 'Mês da fatura' });
+  const inExcData = el('input', { class: 'input', type: 'date', style: 'flex:1', 'aria-label': 'Data de fechamento' });
+  const btnAddExc = el('button', { class: 'btn-add-fixo', style: 'margin:0' }, '+ Exceção');
   btnAddExc.addEventListener('click', () => {
-    const mes = inExcMes.value;            // 'YYYY-MM'
-    const dia = Number(inExcDia.value);
-    if (!/^\d{4}-\d{2}$/.test(mes)) { msg.textContent = 'Escolha o mês da exceção.'; return; }
-    if (!Number.isInteger(dia) || dia < 1 || dia > 31) { msg.textContent = 'Dia da exceção inválido.'; return; }
+    const mes = inExcMes.value;            // 'YYYY-MM' da fatura
+    const dataFech = inExcData.value;      // 'YYYY-MM-DD' do fechamento (qualquer mês)
+    if (!/^\d{4}-\d{2}$/.test(mes)) { msg.textContent = 'Escolha o mês da fatura.'; return; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dataFech)) { msg.textContent = 'Escolha a data de fechamento.'; return; }
     msg.textContent = '';
-    excecoes[mes] = dia; inExcMes.value = ''; inExcDia.value = ''; pintarExcecoes();
+    excecoes[mes] = dataFech; inExcMes.value = ''; inExcData.value = ''; pintarExcecoes();
   });
 
   const btn = el('button', { class: 'btn btn-primary' }, 'Salvar configuração');
@@ -128,9 +128,9 @@ function blocoConfig(estado, aoSalvarConfig, destaque) {
       el('div', { class: 'campo' }, [el('label', {}, 'Dia de vencimento'), inVenc])
     ]),
     el('div', { class: 'campo' }, [
-      el('label', {}, 'Exceções de fechamento (meses que fecharam em dia diferente)'),
+      el('label', {}, 'Exceções: faturas que fecharam em data diferente do padrão'),
       listaExc,
-      el('div', { class: 'exc-add' }, [inExcMes, inExcDia, btnAddExc])
+      el('div', { class: 'exc-add' }, [inExcMes, inExcData, btnAddExc])
     ]),
     msg, btn
   ]);

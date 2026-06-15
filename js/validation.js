@@ -21,7 +21,7 @@ export const rotuloForma = (f) => ({ debito: 'Débito', credito: 'Crédito', pix
 const RE_DATA = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Valida e normaliza um gasto. Retorna {ok, dados} ou {ok:false, erro}. */
-export function validarGasto({ categoria, conta, valorCentavos, data, obs, vencimento, forma, dataCompra, parcela, parcelasTotal, compraId }) {
+export function validarGasto({ categoria, conta, valorCentavos, data, obs, vencimento, forma, dataCompra, parcela, parcelasTotal, compraId, faturaMes }) {
   if (!CATEGORIAS.includes(categoria)) return falha('Categoria inválida.');
   if (!conta || !conta.trim()) return falha('Informe a conta.');
   if (!Number.isInteger(valorCentavos) || valorCentavos < 0) return falha('Valor inválido.');
@@ -36,8 +36,8 @@ export function validarGasto({ categoria, conta, valorCentavos, data, obs, venci
     vencimento: RE_DATA.test(vencimento || '') ? vencimento : null,
     obs: (obs || '').trim()
   };
-  // campos de parcelamento (opcionais) — só gravados quando presentes
   if (RE_DATA.test(dataCompra || '')) dados.dataCompra = dataCompra;
+  if (/^\d{4}-\d{2}$/.test(faturaMes || '')) dados.faturaMes = faturaMes;
   if (Number.isInteger(parcela) && Number.isInteger(parcelasTotal) && parcelasTotal > 1) {
     dados.parcela = parcela;
     dados.parcelasTotal = parcelasTotal;

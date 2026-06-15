@@ -83,7 +83,7 @@ $$('.tab').forEach((b) => b.addEventListener('click', () => {
 
 // ---------- MODAL ----------
 iniciarModal({
-  onSalvar: (tipo, id, dados) => salvarLancamento(estado.obter().uid, tipo, id, dados, estado.obter().cartaoConfig),
+  onSalvar: (tipo, id, dados) => salvarComParcelas(tipo, id, dados),
   onExcluir: (tipo, id) => excluirComEscolha(tipo, id),
   getCartaoCfg: () => estado.obter().cartaoConfig
 });
@@ -104,6 +104,56 @@ function aoEditar(tipo, id) {
   const colecao = tipo === 'gasto' ? e.gastos : e.ganhos;
   const item = colecao.find((x) => x.id === id);
   if (item) abrirEdicao(tipo, item);
+}
+
+// Salva edição; se for parcela de crédito movida de fatura, desloca também
+// as parcelas SEGUINTES pelo mesmo número de meses ("esta e as seguintes").
+async function salvarComParcelas(tipo, id, dados) {
+  const uid = estado.obter().uid;
+  const cfg = estado.obter().cartaoConfig;
+
+  if (tipo === 'gasto' && id && dados.forma === 'credito' && dados.faturaMesEscolhida) {
+    const item = estado.obter().gastos.find((x) => x.id === id);
+    if (item && item.compraId && item.parcelasTotal > 1) {
+      const origem = item.faturaMes || (item.data ? item.data.slice(0, 7) : null);
+      const delta = mesesEntreYM(origem, dados.faturaMesEscolhida);
+      if (delta !== 0) {
+        const mover = confirm(
+          `Mover esta parcela e as seguintes em ${delta > 0 ? '+' : ''}${delta} mês(es)?\n\n` +
+          'OK = mover esta e as parcelas seguintes\n' +
+          'Cancelar = mover só esta parcela'
+        );
+        // sempre salva esta
+        await salvarLancamento(uid, tipo, id, dados, cfg);
+        if (mover) {
+          const seguintes = estado.obter().gastos.filter((g) =>
+            g.compraId === item.compraId && g.parcela > item.parcela);
+          for (const g of seguintes) {
+            const novoFM = deslocarYM(g.faturaMes || g.data.slice(0, 7), delta);
+            await salvarLancamento(uid, 'gasto', g.id, {
+              valorCentavos: g.valor, data: g.data, conta: g.conta,
+              categoria: g.categoria, forma: 'credito', obs: g.obs,
+              faturaMesEscolhida: novoFM
+            }, cfg);
+          }
+        }
+        return;
+      }
+    }
+  }
+  return salvarLancamento(uid, tipo, id, dados, cfg);
+}
+
+function mesesEntreYM(a, b) {
+  if (!a || !b) return 0;
+  const [a1, m1] = a.split('-').map(Number);
+  const [a2, m2] = b.split('-').map(Number);
+  return (a2 * 12 + m2) - (a1 * 12 + m1);
+}
+function deslocarYM(ym, k) {
+  const [a, m] = ym.split('-').map(Number);
+  const t = (a * 12 + (m - 1)) + k;
+  return `${Math.floor(t / 12)}-${String((t % 12) + 1).padStart(2, '0')}`;
 }
 
 // Exclusão que pergunta, para parcelas, se remove só esta ou a compra toda.
