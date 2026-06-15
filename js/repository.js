@@ -2,7 +2,8 @@
 // Nenhum outro módulo importa firebase/firestore diretamente.
 // Estrutura: usuarios/{uid}/gastos|ganhos|fixos/{docId}
 import {
-  collection, doc, addDoc, updateDoc, deleteDoc, setDoc, onSnapshot, query
+  collection, doc, addDoc, updateDoc, deleteDoc, setDoc, onSnapshot, query,
+  where, getDocs, writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { db } from './firebase.js';
 
@@ -44,4 +45,26 @@ export function escutarConfig(uid, chave, aoAtualizar) {
 /** Grava (merge) um documento de configuração. */
 export function salvarConfig(uid, chave, dados) {
   return setDoc(doc(db, 'usuarios', uid, 'config', chave), dados, { merge: true });
+}
+
+/** Adiciona vários documentos numa coleção em lote (ex.: parcelas). */
+export async function adicionarLote(uid, nome, listaDados) {
+  for (let i = 0; i < listaDados.length; i += 450) {
+    const lote = writeBatch(db);
+    for (const d of listaDados.slice(i, i + 450)) {
+      lote.set(doc(colecao(uid, nome)), d);
+    }
+    await lote.commit();
+  }
+}
+
+/** Remove todos os gastos de uma mesma compra (compraId). */
+export async function removerPorCompra(uid, compraId) {
+  const q = query(colecao(uid, 'gastos'), where('compraId', '==', compraId));
+  const snap = await getDocs(q);
+  for (let i = 0; i < snap.docs.length; i += 450) {
+    const lote = writeBatch(db);
+    for (const d of snap.docs.slice(i, i + 450)) lote.delete(d.ref);
+    await lote.commit();
+  }
 }

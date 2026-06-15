@@ -22,6 +22,8 @@ export function iniciarModal({ onSalvar, onExcluir }) {
     const b = e.target.closest('button'); if (!b) return;
     definirForma(b.dataset.forma);
   });
+  $('#in-parcelas').addEventListener('input', atualizarHintParcela);
+  $('#in-valor').addEventListener('input', atualizarHintParcela);
   $('#modal-cancelar').addEventListener('click', fechar);
   $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') fechar(); });
 
@@ -101,6 +103,24 @@ function definirForma(forma) {
   formaAtual = forma;
   $('#seg-forma').querySelectorAll('button').forEach((b) =>
     b.classList.toggle('on', b.dataset.forma === forma));
+  // parcelas só fazem sentido no crédito, e só em lançamento novo
+  const mostrarParcelas = forma === 'credito' && !ctx.id;
+  $('#campo-parcelas').classList.toggle('hidden', !mostrarParcelas);
+  if (!mostrarParcelas) $('#in-parcelas').value = '1';
+  atualizarHintParcela();
+}
+
+function atualizarHintParcela() {
+  const hint = $('#parcela-hint');
+  if (!hint) return;
+  const n = Math.max(1, parseInt($('#in-parcelas').value, 10) || 1);
+  const centavos = reaisParaCentavos($('#in-valor').value);
+  if (n > 1 && Number.isInteger(centavos) && centavos > 0) {
+    const base = Math.floor(centavos / n);
+    hint.textContent = `${n}x de aprox. ${(base / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+  } else {
+    hint.textContent = '';
+  }
 }
 
 function coletar() {
@@ -112,7 +132,10 @@ function coletar() {
       conta: $('#in-conta').value,
       categoria: $('#in-categoria').value,
       forma: formaAtual,
-      obs: $('#in-obs').value
+      obs: $('#in-obs').value,
+      // parcelas só para crédito em lançamento novo; senão 1
+      parcelas: (formaAtual === 'credito' && !ctx.id)
+        ? Math.max(1, parseInt($('#in-parcelas').value, 10) || 1) : 1
     };
   }
   return { tipo: $('#in-conta').value, valorCentavos, data: $('#in-data').value };

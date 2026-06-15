@@ -4,7 +4,7 @@ import { observarSessao, entrar, sair } from './auth.js';
 import * as estado from './state.js';
 import * as repo from './repository.js';
 import { rotuloMes } from './dates.js';
-import { salvarLancamento, excluirLancamento, salvarFixo, excluirFixo } from './services.js';
+import { salvarLancamento, excluirLancamento, excluirCompra, salvarFixo, excluirFixo } from './services.js';
 import { renderPainel } from './ui/painel.js';
 import { renderGastos, renderGanhos, renderFixos } from './ui/listas.js';
 import { renderAnual } from './ui/anual.js';
@@ -83,8 +83,8 @@ $$('.tab').forEach((b) => b.addEventListener('click', () => {
 
 // ---------- MODAL ----------
 iniciarModal({
-  onSalvar: (tipo, id, dados) => salvarLancamento(estado.obter().uid, tipo, id, dados),
-  onExcluir: (tipo, id) => excluirLancamento(estado.obter().uid, tipo, id)
+  onSalvar: (tipo, id, dados) => salvarLancamento(estado.obter().uid, tipo, id, dados, estado.obter().cartaoConfig),
+  onExcluir: (tipo, id) => excluirComEscolha(tipo, id)
 });
 iniciarModalFixo({
   onSalvar: (id, dados) => salvarFixo(estado.obter().uid, id, dados),
@@ -103,6 +103,24 @@ function aoEditar(tipo, id) {
   const colecao = tipo === 'gasto' ? e.gastos : e.ganhos;
   const item = colecao.find((x) => x.id === id);
   if (item) abrirEdicao(tipo, item);
+}
+
+// Exclusão que pergunta, para parcelas, se remove só esta ou a compra toda.
+async function excluirComEscolha(tipo, id) {
+  const uid = estado.obter().uid;
+  if (tipo === 'gasto') {
+    const item = estado.obter().gastos.find((x) => x.id === id);
+    if (item && item.compraId && item.parcelasTotal > 1) {
+      const todas = confirm(
+        `Esta é a parcela ${item.parcela}/${item.parcelasTotal} de "${item.conta}".\n\n` +
+        'OK = excluir a COMPRA INTEIRA (todas as parcelas)\n' +
+        'Cancelar = excluir só esta parcela'
+      );
+      if (todas) return excluirCompra(uid, item.compraId);
+      return excluirLancamento(uid, 'gasto', id);
+    }
+  }
+  return excluirLancamento(uid, tipo, id);
 }
 
 function aoEditarFixo(id) {

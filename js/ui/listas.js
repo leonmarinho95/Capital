@@ -6,6 +6,8 @@ import { diaMes } from '../dates.js';
 import { CATEGORIAS, corDaCategoria, rotuloForma } from '../validation.js';
 import { lancamentosDoMes, gastosPorConta, totaisDoMes } from '../selectors.js';
 
+const parcelaTxt = (g) => (g.parcelasTotal > 1 ? ` (${g.parcela}/${g.parcelasTotal})` : '');
+
 // estado local de filtro da tela de gastos (não pertence ao estado global)
 const filtroGastos = { categoria: '', busca: '' };
 
@@ -63,7 +65,7 @@ export function renderGastos(container, estado, aoEditar) {
     ? el('div', { class: 'rows' }, lancs.map((g) =>
         linha({
           cor: corDaCategoria(g.categoria),
-          titulo: g.conta || '—',
+          titulo: (g.conta || '—') + parcelaTxt(g),
           sub: [diaMes(g.data), g.categoria, g.forma ? rotuloForma(g.forma) : null, g.obs].filter(Boolean).join(' · '),
           valor: formatar(g.valor), classeValor: 'out',
           onClick: () => aoEditar('gasto', g.id)

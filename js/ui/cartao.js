@@ -19,11 +19,12 @@ export function renderCartao(container, estado, aoSalvarConfig, aoNovoCredito, a
   }
 
   const fechamento = cfg.fechamento;
-  const mapa = gastosPorFatura(estado.gastos, fechamento);
+  const excecoes = cfg.excecoes || {};
+  const mapa = gastosPorFatura(estado.gastos, fechamento, excecoes);
 
   // lista de faturas ordenada (chaves = data de fechamento)
   const chaves = [...mapa.keys()].sort();
-  const atual = faturaAtual(fechamento, new Date());
+  const atual = faturaAtual(fechamento, new Date(), excecoes);
   // garante que a fatura atual exista na navegação mesmo se vazia
   if (!chaves.includes(atual)) { chaves.push(atual); chaves.sort(); }
   const idxAtual = chaves.indexOf(atual);
@@ -62,8 +63,8 @@ function listaItens(fatura, aoEditarGasto) {
     const row = el('div', { class: 'row' }, [
       el('span', { class: 'row-dot', style: `background:${corDaCategoria(g.categoria)}` }),
       el('div', { class: 'row-body' }, [
-        el('div', { class: 'row-title' }, g.conta || '—'),
-        el('div', { class: 'row-sub' }, [diaMes(g.data), g.categoria, g.obs].filter(Boolean).join(' · '))
+        el('div', { class: 'row-title' }, (g.conta || '—') + (g.parcelasTotal > 1 ? ` (${g.parcela}/${g.parcelasTotal})` : '')),
+        el('div', { class: 'row-sub' }, [g.dataCompra ? 'compra ' + diaMes(g.dataCompra) : diaMes(g.data), g.categoria, g.obs].filter(Boolean).join(' · '))
       ]),
       el('div', { class: 'row-amount out' }, formatar(g.valor))
     ]);

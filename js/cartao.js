@@ -9,31 +9,43 @@ function ultimoDiaDoMes(ano, mes1a12) {
   return new Date(ano, mes1a12, 0).getDate();
 }
 
-/** Data de fechamento (Date local) de um dado mês, respeitando meses curtos. */
-function dataFechamento(ano, mes1a12, diaFech) {
-  const dia = Math.min(diaFech, ultimoDiaDoMes(ano, mes1a12));
+/**
+ * Dia de fechamento efetivo para um mês, considerando exceções.
+ * @param ano, mes1a12
+ * @param diaPadrao dia de fechamento padrão (1..31)
+ * @param excecoes objeto { 'YYYY-MM': dia } com exceções pontuais
+ */
+export function diaFechamentoDoMes(ano, mes1a12, diaPadrao, excecoes = {}) {
+  const chave = `${ano}-${pad(mes1a12)}`;
+  const exc = excecoes[chave];
+  const dia = Number.isInteger(exc) ? exc : diaPadrao;
+  return Math.min(dia, ultimoDiaDoMes(ano, mes1a12));
+}
+
+/** Data de fechamento (Date local) de um dado mês, respeitando exceções e meses curtos. */
+function dataFechamento(ano, mes1a12, diaPadrao, excecoes) {
+  const dia = diaFechamentoDoMes(ano, mes1a12, diaPadrao, excecoes);
   return new Date(ano, mes1a12 - 1, dia);
 }
 
 /**
- * Dada uma compra 'YYYY-MM-DD' e o dia de fechamento, retorna a fatura
- * a que ela pertence, identificada pela data de fechamento ('YYYY-MM-DD').
- * Compra feita exatamente no dia do fechamento entra na fatura que fecha nesse dia.
+ * Fatura a que pertence uma compra 'YYYY-MM-DD'.
+ * @param diaFechamento dia padrão
+ * @param excecoes { 'YYYY-MM': dia }
+ * @returns 'YYYY-MM-DD' da data de fechamento da fatura
  */
-export function faturaDaCompra(dataCompra, diaFechamento) {
+export function faturaDaCompra(dataCompra, diaFechamento, excecoes = {}) {
   const [a, m, d] = dataCompra.split('-').map(Number);
   const compra = new Date(a, m - 1, d);
 
-  // candidata: fechamento no mês da compra
   let fa = a, fm = m;
-  let fech = dataFechamento(fa, fm, diaFechamento);
+  let fech = dataFechamento(fa, fm, diaFechamento, excecoes);
   if (compra > fech) {
-    // passou do fechamento deste mês -> próxima fatura
     fm += 1;
     if (fm > 12) { fm = 1; fa += 1; }
-    fech = dataFechamento(fa, fm, diaFechamento);
+    fech = dataFechamento(fa, fm, diaFechamento, excecoes);
   }
-  const dia = Math.min(diaFechamento, ultimoDiaDoMes(fa, fm));
+  const dia = diaFechamentoDoMes(fa, fm, diaFechamento, excecoes);
   return `${fa}-${pad(fm)}-${pad(dia)}`;
 }
 
@@ -48,12 +60,17 @@ export function rotuloFatura(dataFech) {
  * Agrupa gastos no crédito por fatura.
  * @returns Map fechamento('YYYY-MM-DD') -> { itens:[], total }
  */
-export function gastosPorFatura(gastos, diaFechamento) {
+export function gastosPorFatura(gastos, diaFechamento, excecoes = {}) {
   const credito = gastos.filter((g) => g.forma === 'credito');
   const mapa = new Map();
   for (const g of credito) {
     if (!g.data) continue;
-    const f = faturaDaCompra(g.data, diaFechamento);
+    // Parcela (tem dataCompra): a própria data já é o vencimento da fatura;
+    // a chave da fatura é o fechamento daquele mês.
+    // À vista (sem dataCompra): a fatura sai da data da compra.
+    const f = g.dataCompra
+      ? faturaDoVencimento(g.data, diaFechamento, excecoes)
+      : faturaDaCompra(g.data, diaFechamento, excecoes);
     if (!mapa.has(f)) mapa.set(f, { itens: [], total: 0 });
     const e = mapa.get(f);
     e.itens.push(g);
@@ -62,8 +79,16 @@ export function gastosPorFatura(gastos, diaFechamento) {
   return mapa;
 }
 
+/** Chave de fatura ('YYYY-MM-DD' do fechamento) para uma parcela cujo
+ *  vencimento/pagamento cai em 'dataPagamento'. A fatura fecha no mês do pagamento. */
+function faturaDoVencimento(dataPagamento, diaFechamento, excecoes) {
+  const [a, m] = dataPagamento.split('-').map(Number);
+  const dia = diaFechamentoDoMes(a, m, diaFechamento, excecoes);
+  return `${a}-${pad(m)}-${pad(dia)}`;
+}
+
 /** Qual fatura está "em aberto" hoje (a que vai fechar a seguir). */
-export function faturaAtual(diaFechamento, hojeData = new Date()) {
+export function faturaAtual(diaFechamento, hojeData = new Date(), excecoes = {}) {
   const hoje = `${hojeData.getFullYear()}-${pad(hojeData.getMonth() + 1)}-${pad(hojeData.getDate())}`;
-  return faturaDaCompra(hoje, diaFechamento);
+  return faturaDaCompra(hoje, diaFechamento, excecoes);
 }

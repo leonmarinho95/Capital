@@ -193,3 +193,6 @@
 
 /* seletor de forma no modal (reusa .seg) */
 #seg-forma{margin-bottom:0}
+
+/* hint de parcela no modal */
+.parcela-hint{font-size:12px;color:var(--teal);margin-top:6px;min-height:14px}
