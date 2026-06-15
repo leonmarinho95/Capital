@@ -15,14 +15,18 @@ export const CORES_CATEGORIA = {
 
 export const corDaCategoria = (cat) => CORES_CATEGORIA[cat] || '#9aa0ab';
 
+export const FORMAS = ['debito', 'credito', 'pix'];
+export const rotuloForma = (f) => ({ debito: 'Débito', credito: 'Crédito', pix: 'Pix' }[f] || '—');
+
 const RE_DATA = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Valida e normaliza um gasto. Retorna {ok, dados} ou {ok:false, erro}. */
-export function validarGasto({ categoria, conta, valorCentavos, data, obs, vencimento }) {
+export function validarGasto({ categoria, conta, valorCentavos, data, obs, vencimento, forma }) {
   if (!CATEGORIAS.includes(categoria)) return falha('Categoria inválida.');
   if (!conta || !conta.trim()) return falha('Informe a conta.');
   if (!Number.isInteger(valorCentavos) || valorCentavos < 0) return falha('Valor inválido.');
   if (!RE_DATA.test(data || '')) return falha('Data inválida.');
+  if (!FORMAS.includes(forma)) return falha('Forma de pagamento inválida.');
   return {
     ok: true,
     dados: {
@@ -30,6 +34,7 @@ export function validarGasto({ categoria, conta, valorCentavos, data, obs, venci
       conta: conta.trim().toUpperCase(),
       valor: valorCentavos,
       data,
+      forma,
       vencimento: RE_DATA.test(vencimento || '') ? vencimento : null,
       obs: (obs || '').trim()
     }
@@ -49,12 +54,11 @@ export function validarGanho({ tipo, valorCentavos, data }) {
  * valorCentavos pode ser null -> fixo de valor variável ("A definir").
  * vencimento: dia do mês 1..31. categoria: uma das CATEGORIAS.
  */
-export function validarFixo({ gasto, categoria, valorCentavos, vencimento, fatura }) {
+export function validarFixo({ gasto, categoria, valorCentavos, vencimento, fatura, lembrete }) {
   if (!gasto || !gasto.trim()) return falha('Informe o nome do gasto fixo.');
   if (!CATEGORIAS.includes(categoria)) return falha('Categoria inválida.');
   const dia = Number(vencimento);
   if (!Number.isInteger(dia) || dia < 1 || dia > 31) return falha('Dia de vencimento inválido (1 a 31).');
-  // valor é opcional: null = variável ("A definir")
   let valor = null;
   if (valorCentavos != null) {
     if (!Number.isInteger(valorCentavos) || valorCentavos < 0) return falha('Valor inválido.');
@@ -65,9 +69,10 @@ export function validarFixo({ gasto, categoria, valorCentavos, vencimento, fatur
     dados: {
       gasto: gasto.trim().toUpperCase(),
       categoria,
-      valor,                 // número (centavos) ou null
+      valor,
       vencimento: dia,
-      fatura: (fatura || '').trim()
+      fatura: (fatura || '').trim(),
+      lembrete: !!lembrete   // true = só lembrete de vencimento, não é gasto
     }
   };
 }

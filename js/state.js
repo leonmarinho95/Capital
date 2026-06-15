@@ -9,6 +9,7 @@ const estado = {
   gastos: [],
   ganhos: [],
   fixos: [],
+  cartaoConfig: null,
   carregando: true,
   erro: null
 };
@@ -37,6 +38,8 @@ export function definirColecao(nome, itens) {
 
 export function definirMes(novoMes) { estado.mes = novoMes; notificar(); }
 export function navegarMes(delta) { estado.mes = deslocarMes(estado.mes, delta); notificar(); }
+
+export function definirCartaoConfig(cfg) { estado.cartaoConfig = cfg; notificar(); }
 
 export function definirErro(erro) { estado.erro = erro; notificar(); }
 

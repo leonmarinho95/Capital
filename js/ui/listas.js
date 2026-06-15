@@ -3,7 +3,7 @@
 import { el, vazio } from './dom.js';
 import { formatar } from '../money.js';
 import { diaMes } from '../dates.js';
-import { CATEGORIAS, corDaCategoria } from '../validation.js';
+import { CATEGORIAS, corDaCategoria, rotuloForma } from '../validation.js';
 import { lancamentosDoMes, gastosPorConta, totaisDoMes } from '../selectors.js';
 
 // estado local de filtro da tela de gastos (não pertence ao estado global)
@@ -64,7 +64,7 @@ export function renderGastos(container, estado, aoEditar) {
         linha({
           cor: corDaCategoria(g.categoria),
           titulo: g.conta || '—',
-          sub: [diaMes(g.data), g.categoria, g.obs].filter(Boolean).join(' · '),
+          sub: [diaMes(g.data), g.categoria, g.forma ? rotuloForma(g.forma) : null, g.obs].filter(Boolean).join(' · '),
           valor: formatar(g.valor), classeValor: 'out',
           onClick: () => aoEditar('gasto', g.id)
         })))
@@ -96,7 +96,7 @@ export function renderFixos(container, estado, aoEditarFixo, aoNovoFixo) {
   const corpo = lista.length
     ? el('div', { class: 'rows' }, lista.map((f) => {
         const valor = Number.isInteger(f.valor) ? formatar(f.valor) : 'A definir';
-        const sub = [f.vencimento ? `vence dia ${f.vencimento}` : null, f.categoria, f.fatura].filter(Boolean).join(' · ');
+        const sub = [f.vencimento ? `vence dia ${f.vencimento}` : null, f.categoria, f.lembrete ? 'só lembrete' : null, f.fatura].filter(Boolean).join(' · ');
         return linha({
           cor: 'var(--teal-deep)', titulo: f.gasto, sub, valor,
           onClick: aoEditarFixo ? () => aoEditarFixo(f.id) : null

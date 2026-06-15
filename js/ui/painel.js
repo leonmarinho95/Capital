@@ -43,17 +43,22 @@ function cardVencimentos(estado, aoLancar) {
   if (proximos.length === 0) return null;
 
   const itens = proximos.map((v) => {
-    const valorTxt = Number.isInteger(v.valor) ? formatar(v.valor) : 'valor a confirmar';
+    const ehLembrete = !!v.lembrete;
+    const valorTxt = Number.isInteger(v.valor) ? formatar(v.valor) : (ehLembrete ? 'lembrete' : 'valor a confirmar');
     const info = el('div', { class: 'venc-info' }, [
       el('div', { class: 'venc-nome' }, v.gasto),
       el('div', { class: 'venc-sub' }, `${rotuloProximidade(v.emDias)} · ${valorTxt}`)
     ]);
-    const btn = el('button', { class: 'venc-lancar' }, 'Lançar');
-    if (aoLancar) btn.addEventListener('click', () => aoLancar(v));
-    return el('div', { class: 'venc-row' }, [
-      el('span', { class: `venc-dot ${v.emDias <= 1 ? 'urgente' : ''}` }),
-      info, btn
-    ]);
+    const filhos = [el('span', { class: `venc-dot ${v.emDias <= 1 ? 'urgente' : ''}` }), info];
+    // lembrete (ex.: fatura do cartão) não vira gasto — só avisa.
+    if (!ehLembrete) {
+      const btn = el('button', { class: 'venc-lancar' }, 'Lançar');
+      if (aoLancar) btn.addEventListener('click', () => aoLancar(v));
+      filhos.push(btn);
+    } else {
+      filhos.push(el('span', { class: 'venc-tag' }, 'só lembrete'));
+    }
+    return el('div', { class: 'venc-row' }, filhos);
   });
 
   return el('section', { class: 'card card-venc' }, [

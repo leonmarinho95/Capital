@@ -42,6 +42,7 @@ export function abrirNovoFixo() {
   $('#fx-categoria').value = 'MORADIA';
   $('#fx-vencimento').value = '';
   $('#fx-variavel').checked = false;
+  $('#fx-lembrete').checked = false;
   $('#fx-valor').value = '';
   $('#fx-fatura').value = '';
   sincronizarValor();
@@ -58,6 +59,7 @@ export function abrirEdicaoFixo(fixo) {
   $('#fx-vencimento').value = fixo.vencimento ?? '';
   const variavel = !(typeof fixo.valor === 'number');
   $('#fx-variavel').checked = variavel;
+  $('#fx-lembrete').checked = !!fixo.lembrete;
   $('#fx-valor').value = variavel ? '' : String(centavosParaReais(fixo.valor) ?? '').replace('.', ',');
   $('#fx-fatura').value = fixo.fatura || '';
   sincronizarValor();
@@ -77,7 +79,8 @@ function coletar() {
     categoria: $('#fx-categoria').value,
     vencimento: $('#fx-vencimento').value,
     valorCentavos: variavel ? null : reaisParaCentavos($('#fx-valor').value),
-    fatura: $('#fx-fatura').value
+    fatura: $('#fx-fatura').value,
+    lembrete: $('#fx-lembrete').checked
   };
 }
 

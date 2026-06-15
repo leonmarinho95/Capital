@@ -1,12 +1,12 @@
 // Service worker — estratégia network-first para arquivos do app.
 // Sempre tenta a versão mais recente da rede; cai no cache só offline.
 // Assim, atualizações aparecem sem precisar limpar cache manualmente.
-const CACHE = 'capital-v8';
+const CACHE = 'capital-v9';
 const ASSETS = ['./','./index.html','./css/base.css','./css/app.css','./manifest.json',
  './js/app.js','./js/firebase.js','./js/config.js','./js/auth.js','./js/repository.js',
  './js/state.js','./js/selectors.js','./js/services.js','./js/validation.js',
  './js/money.js','./js/dates.js','./js/ui/dom.js','./js/ui/painel.js',
- './js/ui/listas.js','./js/ui/modal.js','./js/ui/anual.js','./js/selectors-anual.js','./js/ui/modal-fixo.js','./js/vencimentos.js','./js/ui/treemap.js'];
+ './js/ui/listas.js','./js/ui/modal.js','./js/ui/anual.js','./js/selectors-anual.js','./js/ui/modal-fixo.js','./js/vencimentos.js','./js/cartao.js','./js/ui/cartao.js','./js/ui/treemap.js'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS).catch(() => {})));

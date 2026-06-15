@@ -6,6 +6,7 @@ import { reaisParaCentavos, centavosParaReais } from '../money.js';
 import { hoje } from '../dates.js';
 
 let ctx = null; // {tipo, id|null, onSalvar, onExcluir}
+let formaAtual = 'debito';
 
 export function iniciarModal({ onSalvar, onExcluir }) {
   // popular categorias uma vez
@@ -16,6 +17,10 @@ export function iniciarModal({ onSalvar, onExcluir }) {
     const b = e.target.closest('button'); if (!b) return;
     if (ctx && ctx.id) return; // não troca tipo em edição
     definirTipo(b.dataset.tipo);
+  });
+  $('#seg-forma').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    definirForma(b.dataset.forma);
   });
   $('#modal-cancelar').addEventListener('click', fechar);
   $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') fechar(); });
@@ -56,6 +61,7 @@ export function abrirNovo(prefill = null) {
   $('#in-obs').value = '';
   $('#in-categoria').value = prefill?.categoria || 'COMPRAS';
   $('#in-data').value = prefill?.data || hoje();
+  definirForma(prefill?.forma || 'debito');
   msg('');
   mostrar();
 }
@@ -72,6 +78,7 @@ export function abrirEdicao(tipo, item) {
     $('#in-conta').value = item.conta || '';
     $('#in-categoria').value = item.categoria || 'COMPRAS';
     $('#in-obs').value = item.obs || '';
+    definirForma(item.forma || 'debito');
   } else {
     $('#in-conta').value = item.tipo || '';
   }
@@ -86,20 +93,25 @@ function definirTipo(tipo) {
   const ehGasto = tipo === 'gasto';
   $('#campo-categoria').classList.toggle('hidden', !ehGasto);
   $('#campo-obs').classList.toggle('hidden', !ehGasto);
+  $('#campo-forma').classList.toggle('hidden', !ehGasto);
   $('#label-conta').textContent = ehGasto ? 'Conta' : 'Tipo (ex.: SALÁRIO)';
+}
+
+function definirForma(forma) {
+  formaAtual = forma;
+  $('#seg-forma').querySelectorAll('button').forEach((b) =>
+    b.classList.toggle('on', b.dataset.forma === forma));
 }
 
 function coletar() {
   const valorCentavos = reaisParaCentavos($('#in-valor').value);
-  const base = {
-    valorCentavos,
-    data: $('#in-data').value,
-    conta: $('#in-conta').value
-  };
   if (ctx.tipo === 'gasto') {
     return {
-      ...base,
+      valorCentavos,
+      data: $('#in-data').value,
+      conta: $('#in-conta').value,
       categoria: $('#in-categoria').value,
+      forma: formaAtual,
       obs: $('#in-obs').value
     };
   }

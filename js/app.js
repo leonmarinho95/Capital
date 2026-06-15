@@ -8,6 +8,7 @@ import { salvarLancamento, excluirLancamento, salvarFixo, excluirFixo } from './
 import { renderPainel } from './ui/painel.js';
 import { renderGastos, renderGanhos, renderFixos } from './ui/listas.js';
 import { renderAnual } from './ui/anual.js';
+import { renderCartao } from './ui/cartao.js';
 import { iniciarModal, abrirNovo, abrirEdicao } from './ui/modal.js';
 import { iniciarModalFixo, abrirNovoFixo, abrirEdicaoFixo } from './ui/modal-fixo.js';
 import { dataISOLocal } from './vencimentos.js';
@@ -57,6 +58,10 @@ function conectarDados(uid) {
       (erro) => estado.definirErro(erro));
     unsubscribers.push(u);
   }
+  // configuração do cartão (dia de fechamento)
+  unsubscribers.push(
+    repo.escutarConfig(uid, 'cartao', (cfg) => estado.definirCartaoConfig(cfg))
+  );
 }
 
 function desconectarDados() {
@@ -89,6 +94,7 @@ iniciarModalFixo({
 // O botão + abre o modal certo conforme a aba ativa.
 $('#fab').addEventListener('click', () => {
   if (abaAtiva === 'fixos') abrirNovoFixo();
+  else if (abaAtiva === 'cartao') aoNovoCredito();
   else abrirNovo();
 });
 
@@ -114,6 +120,15 @@ function aoLancarVencimento(v) {
   });
 }
 
+// Lançar compra já com forma = crédito (a partir da aba Cartão).
+function aoNovoCredito() {
+  abrirNovo({ forma: 'credito' });
+}
+
+function aoSalvarCartaoConfig(dados) {
+  return repo.salvarConfig(estado.obter().uid, 'cartao', dados);
+}
+
 // ---------- RENDER ----------
 estado.assinar(renderizar);
 
@@ -132,4 +147,5 @@ function renderizar() {
   else if (abaAtiva === 'ganhos') renderGanhos($('#aba-ganhos'), e, aoEditar);
   else if (abaAtiva === 'fixos') renderFixos($('#aba-fixos'), e, aoEditarFixo, abrirNovoFixo);
   else if (abaAtiva === 'anual') renderAnual($('#aba-anual'), e);
+  else if (abaAtiva === 'cartao') renderCartao($('#aba-cartao'), e, aoSalvarCartaoConfig, aoNovoCredito, aoEditar);
 }

@@ -181,3 +181,15 @@
 /* checkbox label */
 .check-label{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--txt);cursor:pointer}
 .check-label input{width:18px;height:18px;accent-color:var(--teal)}
+
+/* ===== Cartão ===== */
+.fatura-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:6px}
+.fatura-nav button{width:32px;height:32px;border:1px solid var(--line);border-radius:999px;background:var(--surface-2);color:var(--txt-dim);font-size:18px;cursor:pointer}
+.fatura-nav button:disabled{opacity:.35;cursor:default}
+.fatura-nav span{font-size:14px;font-weight:600;min-width:150px;text-align:center}
+.fatura-total{font-family:var(--display);font-weight:700;font-size:34px;text-align:center;color:var(--red);letter-spacing:-.02em}
+.fatura-label{text-align:center;font-size:12.5px;color:var(--txt-mute);margin-top:4px}
+.venc-tag{font-size:11px;color:var(--txt-mute);font-style:italic;flex-shrink:0}
+
+/* seletor de forma no modal (reusa .seg) */
+#seg-forma{margin-bottom:0}
