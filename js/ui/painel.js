@@ -9,7 +9,7 @@ import {
   totaisDoMes, economiaMesAnterior, serieGastos, gastosPorCategoria
 } from '../selectors.js';
 
-export function renderPainel(container, estado, aoLancarVencimento) {
+export function renderPainel(container, estado, aoLancarVencimento, aoResolverVencimento) {
   if (estado.carregando) {
     container.replaceChildren(vazio('Carregando…'));
     return;
@@ -31,34 +31,44 @@ export function renderPainel(container, estado, aoLancarVencimento) {
   ]);
 
   const filhos = [hero, duo];
-  const alertas = cardVencimentos(estado, aoLancarVencimento);
+  const alertas = cardVencimentos(estado, aoLancarVencimento, aoResolverVencimento);
   if (alertas) filhos.push(alertas);
   filhos.push(cardBarras(estado), cardCategorias(estado));
   container.replaceChildren(...filhos);
 }
 
 // Bloco "Vencem em breve" — só aparece se houver vencimentos na janela.
-function cardVencimentos(estado, aoLancar) {
+function cardVencimentos(estado, aoLancar, aoResolver) {
   const proximos = vencendoEmBreve(estado.fixos, new Date(), 5);
-  if (proximos.length === 0) return null;
+  // filtra os já resolvidos neste mês
+  const resolvidos = estado.cartaoConfig?.resolvidos || {};
+  const mesAtual = new Date().toISOString().slice(0, 7);
+  const visiveis = proximos.filter((v) => !resolvidos[`${v.id}:${mesAtual}`]);
+  if (visiveis.length === 0) return null;
 
-  const itens = proximos.map((v) => {
+  const itens = visiveis.map((v) => {
     const ehLembrete = !!v.lembrete;
     const valorTxt = Number.isInteger(v.valor) ? formatar(v.valor) : (ehLembrete ? 'lembrete' : 'valor a confirmar');
     const info = el('div', { class: 'venc-info' }, [
       el('div', { class: 'venc-nome' }, v.gasto),
       el('div', { class: 'venc-sub' }, `${rotuloProximidade(v.emDias)} · ${valorTxt}`)
     ]);
-    const filhos = [el('span', { class: `venc-dot ${v.emDias <= 1 ? 'urgente' : ''}` }), info];
-    // lembrete (ex.: fatura do cartão) não vira gasto — só avisa.
+    const acoes = el('div', { class: 'venc-acoes' });
     if (!ehLembrete) {
       const btn = el('button', { class: 'venc-lancar' }, 'Lançar');
       if (aoLancar) btn.addEventListener('click', () => aoLancar(v));
-      filhos.push(btn);
+      acoes.appendChild(btn);
     } else {
-      filhos.push(el('span', { class: 'venc-tag' }, 'só lembrete'));
+      acoes.appendChild(el('span', { class: 'venc-tag' }, 'só lembrete'));
     }
-    return el('div', { class: 'venc-row' }, filhos);
+    const jaBtn = el('button', { class: 'venc-feito', title: 'Já lançado / pago' }, '✓ Já lançado');
+    if (aoResolver) jaBtn.addEventListener('click', () => aoResolver(v.id));
+    acoes.appendChild(jaBtn);
+
+    return el('div', { class: 'venc-row' }, [
+      el('span', { class: `venc-dot ${v.emDias <= 1 ? 'urgente' : ''}` }),
+      info, acoes
+    ]);
   });
 
   return el('section', { class: 'card card-venc' }, [

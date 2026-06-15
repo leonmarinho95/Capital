@@ -5,9 +5,11 @@ import { gerarParcelas } from './parcelas.js';
 import * as repo from './repository.js';
 
 export async function salvarLancamento(uid, tipo, id, formulario, cartaoCfg) {
-  // Compra parcelada no crédito (nova): gera N lançamentos.
-  if (tipo === 'gasto' && !id && formulario.forma === 'credito' && (formulario.parcelas || 1) > 1) {
-    return salvarParcelado(uid, formulario, cartaoCfg);
+  // Gasto no crédito (novo): a data digitada é a da COMPRA; o app calcula
+  // a data de pagamento (vencimento da fatura) e contabiliza por ela.
+  // Parcelado gera N; à vista gera 1 — mesmo caminho unificado.
+  if (tipo === 'gasto' && !id && formulario.forma === 'credito') {
+    return salvarCredito(uid, formulario, cartaoCfg);
   }
   const v = tipo === 'gasto' ? validarGasto(formulario) : validarGanho(formulario);
   if (!v.ok) throw new Error(v.erro);
@@ -16,11 +18,12 @@ export async function salvarLancamento(uid, tipo, id, formulario, cartaoCfg) {
   return repo.adicionar(uid, colecao, v.dados);
 }
 
-async function salvarParcelado(uid, formulario, cartaoCfg) {
+async function salvarCredito(uid, formulario, cartaoCfg) {
   const fechamento = cartaoCfg?.fechamento;
-  if (!fechamento) throw new Error('Configure o dia de fechamento do cartão (aba Cartão) antes de parcelar.');
+  if (!fechamento) throw new Error('Configure o dia de fechamento do cartão (aba Cartão) antes de lançar no crédito.');
   const vencimento = cartaoCfg?.vencimento || 8;
   const excecoes = cartaoCfg?.excecoes || {};
+  const n = Math.max(1, formulario.parcelas || 1);
   const compraId = 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
 
   const base = {
@@ -28,11 +31,10 @@ async function salvarParcelado(uid, formulario, cartaoCfg) {
     categoria: formulario.categoria,
     obs: formulario.obs,
     valorCentavos: formulario.valorCentavos,
-    dataCompra: formulario.data           // a data informada é a da compra
+    dataCompra: formulario.data            // a data informada é a da COMPRA
   };
-  const brutas = gerarParcelas(base, formulario.parcelas, fechamento, vencimento, excecoes, compraId);
+  const brutas = gerarParcelas(base, n, fechamento, vencimento, excecoes, compraId);
 
-  // valida cada parcela e coleta os dados normalizados
   const docs = [];
   for (const p of brutas) {
     const v = validarGasto({
@@ -40,9 +42,10 @@ async function salvarParcelado(uid, formulario, cartaoCfg) {
       data: p.data, obs: p.obs, forma: p.forma,
       dataCompra: p.dataCompra, parcela: p.parcela, parcelasTotal: p.parcelasTotal, compraId: p.compraId
     });
-    if (!v.ok) throw new Error('Parcela inválida: ' + v.erro);
+    if (!v.ok) throw new Error('Lançamento inválido: ' + v.erro);
     docs.push(v.dados);
   }
+  // à vista (1) também passa pelo lote — simples e consistente
   return repo.adicionarLote(uid, 'gastos', docs);
 }
 

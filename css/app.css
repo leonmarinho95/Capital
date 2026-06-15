@@ -196,3 +196,15 @@
 
 /* hint de parcela no modal */
 .parcela-hint{font-size:12px;color:var(--teal);margin-top:6px;min-height:14px}
+
+/* ações dos alertas de vencimento */
+.venc-acoes{display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0}
+.venc-feito{padding:5px 10px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--txt-dim);font:600 11px var(--body);cursor:pointer}
+.venc-feito:active{background:var(--surface-3)}
+
+/* config do cartão: duo e exceções */
+.cfg-duo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.exc-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.exc-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);border:1px solid var(--line-soft);border-radius:var(--r-sm);padding:8px 12px;font-size:13px}
+.exc-del{border:none;background:transparent;color:var(--red);cursor:pointer;font-size:14px}
+.exc-add{display:flex;gap:8px;align-items:center}

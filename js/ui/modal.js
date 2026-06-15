@@ -4,11 +4,14 @@ import { $ } from './dom.js';
 import { CATEGORIAS } from '../validation.js';
 import { reaisParaCentavos, centavosParaReais } from '../money.js';
 import { hoje } from '../dates.js';
+import { faturaDaCompra, rotuloFatura } from '../cartao.js';
 
 let ctx = null; // {tipo, id|null, onSalvar, onExcluir}
 let formaAtual = 'debito';
+let obterCartaoCfg = () => null;
 
-export function iniciarModal({ onSalvar, onExcluir }) {
+export function iniciarModal({ onSalvar, onExcluir, getCartaoCfg }) {
+  if (getCartaoCfg) obterCartaoCfg = getCartaoCfg;
   // popular categorias uma vez
   const sel = $('#in-categoria');
   for (const c of CATEGORIAS) sel.append(new Option(c, c));
@@ -24,6 +27,7 @@ export function iniciarModal({ onSalvar, onExcluir }) {
   });
   $('#in-parcelas').addEventListener('input', atualizarHintParcela);
   $('#in-valor').addEventListener('input', atualizarHintParcela);
+  $('#in-data').addEventListener('input', atualizarHintParcela);
   $('#modal-cancelar').addEventListener('click', fechar);
   $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') fechar(); });
 
@@ -104,23 +108,41 @@ function definirForma(forma) {
   $('#seg-forma').querySelectorAll('button').forEach((b) =>
     b.classList.toggle('on', b.dataset.forma === forma));
   // parcelas só fazem sentido no crédito, e só em lançamento novo
-  const mostrarParcelas = forma === 'credito' && !ctx.id;
+  const ehCredito = forma === 'credito';
+  const mostrarParcelas = ehCredito && !ctx.id;
   $('#campo-parcelas').classList.toggle('hidden', !mostrarParcelas);
   if (!mostrarParcelas) $('#in-parcelas').value = '1';
+  // no crédito a data digitada é a da COMPRA
+  const lblData = document.querySelector('label[for="in-data"]');
+  if (lblData) lblData.textContent = ehCredito ? 'Data da compra' : 'Data';
   atualizarHintParcela();
 }
 
 function atualizarHintParcela() {
   const hint = $('#parcela-hint');
   if (!hint) return;
+  // a dica de parcela/fatura só vale para crédito em lançamento novo
+  if (formaAtual !== 'credito' || ctx.id) { hint.textContent = ''; return; }
+
   const n = Math.max(1, parseInt($('#in-parcelas').value, 10) || 1);
   const centavos = reaisParaCentavos($('#in-valor').value);
+  const data = $('#in-data').value;
+  const cfg = obterCartaoCfg() || {};
+  const partes = [];
+
+  // valor por parcela
   if (n > 1 && Number.isInteger(centavos) && centavos > 0) {
     const base = Math.floor(centavos / n);
-    hint.textContent = `${n}x de aprox. ${(base / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
-  } else {
-    hint.textContent = '';
+    partes.push(`${n}x de aprox. ${(base / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
   }
+  // fatura de destino (auto-preenchimento informativo)
+  if (cfg.fechamento && /^\d{4}-\d{2}-\d{2}$/.test(data)) {
+    const fech = faturaDaCompra(data, cfg.fechamento, cfg.excecoes || {});
+    partes.push(`1ª na ${rotuloFatura(fech)}`);
+  } else if (!cfg.fechamento) {
+    partes.push('configure o fechamento do cartão na aba Cartão');
+  }
+  hint.textContent = partes.join(' · ');
 }
 
 function coletar() {

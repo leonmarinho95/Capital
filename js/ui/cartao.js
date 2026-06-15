@@ -79,25 +79,58 @@ function listaItens(fatura, aoEditarGasto) {
 
 function blocoConfig(estado, aoSalvarConfig, destaque) {
   const cfg = estado.cartaoConfig || {};
-  const inFech = el('input', { class: 'input', type: 'number', min: '1', max: '31', id: 'cfg-fech', value: cfg.fechamento ?? '', placeholder: 'ex.: 1' });
+  const excecoes = { ...(cfg.excecoes || {}) };
+
+  const inFech = el('input', { class: 'input', type: 'number', min: '1', max: '31', value: cfg.fechamento ?? '', placeholder: 'ex.: 1' });
+  const inVenc = el('input', { class: 'input', type: 'number', min: '1', max: '31', value: cfg.vencimento ?? 8, placeholder: 'ex.: 8' });
   const msg = el('p', { class: 'modal-msg' });
+
+  // editor de exceções (mês AAAA-MM + dia)
+  const listaExc = el('div', { class: 'exc-list' });
+  function pintarExcecoes() {
+    const linhas = Object.entries(excecoes).sort().map(([mes, dia]) =>
+      el('div', { class: 'exc-row' }, [
+        el('span', {}, `${mes} → fecha dia ${dia}`),
+        el('button', { class: 'exc-del', onclick: () => { delete excecoes[mes]; pintarExcecoes(); } }, '✕')
+      ]));
+    listaExc.replaceChildren(...(linhas.length ? linhas : [el('span', { class: 'muted' }, 'Sem exceções. Usa o padrão todo mês.')]));
+  }
+  pintarExcecoes();
+
+  const inExcMes = el('input', { class: 'input', type: 'month', style: 'flex:1' });
+  const inExcDia = el('input', { class: 'input', type: 'number', min: '1', max: '31', placeholder: 'dia', style: 'width:80px' });
+  const btnAddExc = el('button', { class: 'btn-add-fixo', style: 'margin:0' }, '+ Adicionar exceção');
+  btnAddExc.addEventListener('click', () => {
+    const mes = inExcMes.value;            // 'YYYY-MM'
+    const dia = Number(inExcDia.value);
+    if (!/^\d{4}-\d{2}$/.test(mes)) { msg.textContent = 'Escolha o mês da exceção.'; return; }
+    if (!Number.isInteger(dia) || dia < 1 || dia > 31) { msg.textContent = 'Dia da exceção inválido.'; return; }
+    msg.textContent = '';
+    excecoes[mes] = dia; inExcMes.value = ''; inExcDia.value = ''; pintarExcecoes();
+  });
+
   const btn = el('button', { class: 'btn btn-primary' }, 'Salvar configuração');
   btn.addEventListener('click', async () => {
-    const f = Number(inFech.value);
+    const f = Number(inFech.value), v = Number(inVenc.value);
     if (!Number.isInteger(f) || f < 1 || f > 31) { msg.textContent = 'Dia de fechamento inválido (1 a 31).'; return; }
-    msg.textContent = '';
-    btn.disabled = true; btn.textContent = 'Salvando…';
-    try { await aoSalvarConfig({ fechamento: f }); }
+    if (!Number.isInteger(v) || v < 1 || v > 31) { msg.textContent = 'Dia de vencimento inválido (1 a 31).'; return; }
+    msg.textContent = ''; btn.disabled = true; btn.textContent = 'Salvando…';
+    try { await aoSalvarConfig({ fechamento: f, vencimento: v, excecoes }); }
     catch (e) { msg.textContent = 'Erro ao salvar: ' + (e.message || e); btn.disabled = false; btn.textContent = 'Salvar configuração'; }
   });
 
   return el('section', { class: `card ${destaque ? 'card-venc' : ''}` }, [
     el('div', { class: 'card-head' }, [el('h2', {}, destaque ? 'Configure seu cartão' : 'Configuração do cartão')]),
     destaque ? el('p', { class: 'muted', style: 'margin-bottom:14px' },
-      'Informe o dia de fechamento da fatura (você encontra no app do banco). É diferente do vencimento.') : null,
+      'Informe o dia de fechamento e o vencimento da fatura (no app do banco). São dias diferentes.') : null,
+    el('div', { class: 'cfg-duo' }, [
+      el('div', { class: 'campo' }, [el('label', {}, 'Dia de fechamento'), inFech]),
+      el('div', { class: 'campo' }, [el('label', {}, 'Dia de vencimento'), inVenc])
+    ]),
     el('div', { class: 'campo' }, [
-      el('label', { for: 'cfg-fech' }, 'Dia de fechamento da fatura'),
-      inFech
+      el('label', {}, 'Exceções de fechamento (meses que fecharam em dia diferente)'),
+      listaExc,
+      el('div', { class: 'exc-add' }, [inExcMes, inExcDia, btnAddExc])
     ]),
     msg, btn
   ]);

@@ -84,7 +84,8 @@ $$('.tab').forEach((b) => b.addEventListener('click', () => {
 // ---------- MODAL ----------
 iniciarModal({
   onSalvar: (tipo, id, dados) => salvarLancamento(estado.obter().uid, tipo, id, dados, estado.obter().cartaoConfig),
-  onExcluir: (tipo, id) => excluirComEscolha(tipo, id)
+  onExcluir: (tipo, id) => excluirComEscolha(tipo, id),
+  getCartaoCfg: () => estado.obter().cartaoConfig
 });
 iniciarModalFixo({
   onSalvar: (id, dados) => salvarFixo(estado.obter().uid, id, dados),
@@ -147,6 +148,14 @@ function aoSalvarCartaoConfig(dados) {
   return repo.salvarConfig(estado.obter().uid, 'cartao', dados);
 }
 
+// "Já lançado": marca o vencimento como resolvido no mês atual (volta mês que vem).
+function aoResolverVencimento(fixoId) {
+  const mesAtual = new Date().toISOString().slice(0, 7);
+  const resolvidos = { ...(estado.obter().cartaoConfig?.resolvidos || {}) };
+  resolvidos[`${fixoId}:${mesAtual}`] = true;
+  return repo.salvarConfig(estado.obter().uid, 'cartao', { resolvidos });
+}
+
 // ---------- RENDER ----------
 estado.assinar(renderizar);
 
@@ -160,7 +169,7 @@ function renderizar() {
     return;
   }
 
-  if (abaAtiva === 'painel') renderPainel($('#aba-painel'), e, aoLancarVencimento);
+  if (abaAtiva === 'painel') renderPainel($('#aba-painel'), e, aoLancarVencimento, aoResolverVencimento);
   else if (abaAtiva === 'gastos') renderGastos($('#aba-gastos'), e, aoEditar);
   else if (abaAtiva === 'ganhos') renderGanhos($('#aba-ganhos'), e, aoEditar);
   else if (abaAtiva === 'fixos') renderFixos($('#aba-fixos'), e, aoEditarFixo, abrirNovoFixo);
