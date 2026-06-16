@@ -8,6 +8,7 @@ import { salvarLancamento, excluirLancamento, excluirCompra, salvarFixo, excluir
 import { renderPainel } from './ui/painel.js';
 import { renderGastos, renderGanhos, renderFixos } from './ui/listas.js';
 import { renderCartao } from './ui/cartao.js';
+import { renderOrcamento } from './ui/orcamento.js';
 import { iniciarModal, abrirNovo, abrirEdicao } from './ui/modal.js';
 import { iniciarModalFixo, abrirNovoFixo, abrirEdicaoFixo } from './ui/modal-fixo.js';
 import { dataISOLocal } from './vencimentos.js';
@@ -60,6 +61,10 @@ function conectarDados(uid) {
   // configuração do cartão (dia de fechamento)
   unsubscribers.push(
     repo.escutarConfig(uid, 'cartao', (cfg) => estado.definirCartaoConfig(cfg))
+  );
+  // orçamento por categoria
+  unsubscribers.push(
+    repo.escutarConfig(uid, 'orcamento', (orc) => estado.definirOrcamento(orc))
   );
 }
 
@@ -222,4 +227,11 @@ function renderizar() {
   else if (abaAtiva === 'ganhos') renderGanhos($('#aba-ganhos'), e, aoEditar);
   else if (abaAtiva === 'fixos') renderFixos($('#aba-fixos'), e, aoEditarFixo, abrirNovoFixo);
   else if (abaAtiva === 'cartao') renderCartao($('#aba-cartao'), e, aoSalvarCartaoConfig, aoNovoCredito, aoEditar);
+  else if (abaAtiva === 'orcamento') renderOrcamento($('#aba-orcamento'), e, aoSalvarOrcamento);
+}
+
+function aoSalvarOrcamento(novo) {
+  // sobrescreve o documento inteiro (sem merge) para que categorias
+  // removidas do orçamento realmente desapareçam.
+  return repo.salvarConfig(estado.obter().uid, 'orcamento', novo, false);
 }

@@ -42,9 +42,9 @@ export function escutarConfig(uid, chave, aoAtualizar) {
     (snap) => aoAtualizar(snap.exists() ? snap.data() : null));
 }
 
-/** Grava (merge) um documento de configuração. */
-export function salvarConfig(uid, chave, dados) {
-  return setDoc(doc(db, 'usuarios', uid, 'config', chave), dados, { merge: true });
+/** Grava um documento de configuração. merge=true (padrão) mescla; false sobrescreve. */
+export function salvarConfig(uid, chave, dados, merge = true) {
+  return setDoc(doc(db, 'usuarios', uid, 'config', chave), dados, { merge });
 }
 
 /** Adiciona vários documentos numa coleção em lote (ex.: parcelas). */

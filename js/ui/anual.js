@@ -1,8 +1,7 @@
 // js/ui/anual.js — tela "Anual": patrimônio, resumo, ganhos x gastos, categorias.
 import { el, vazio } from './dom.js';
-import { formatar, formatarCompacto } from '../money.js';
-import { corDaCategoria } from '../validation.js';
-import { squarify, agruparPequenos } from './treemap.js';
+import { formatar } from '../money.js';
+import { treemapDeCategorias } from './treemap.js';
 import {
   serieMensal, patrimonioAcumulado, resumoPeriodo, categoriasDoPeriodo
 } from '../selectors-anual.js';
@@ -167,63 +166,11 @@ function cardGanhosGastos(estado) {
 }
 
 /* ---------- Categorias do período (reusa treemap) ---------- */
-const TM_W = 600, TM_H = 220, GAP = 4, RADIUS = 8;
-
 function cardCategorias(estado) {
   const cats = categoriasDoPeriodo(estado, periodo.janela);
-  const corpo = cats.length ? treemapSVG(cats) : vazio('Sem gastos no período.');
+  const corpo = cats.length ? treemapDeCategorias(cats) : vazio('Sem gastos no período.');
   return el('section', { class: 'card' }, [
     el('div', { class: 'card-head' }, [el('h2', {}, 'Gastos por categoria no período')]),
     corpo
   ]);
-}
-
-function treemapSVG(cats) {
-  const dados = agruparPequenos(cats, 0.05);
-  const rects = squarify(dados, { x: 0, y: 0, w: TM_W, h: TM_H }, (c) => c.total);
-  const ns = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(ns, 'svg');
-  svg.setAttribute('viewBox', `0 0 ${TM_W} ${TM_H}`);
-  svg.setAttribute('class', 'treemap-svg');
-  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-  svg.setAttribute('role', 'img');
-  for (const r of rects) {
-    const x = r.x + GAP / 2, y = r.y + GAP / 2;
-    const w = Math.max(0, r.w - GAP), h = Math.max(0, r.h - GAP);
-    const cor = r.categoria === 'OUTROS' ? '#5a616e' : corDaCategoria(r.categoria);
-    const g = document.createElementNS(ns, 'g');
-    const rect = document.createElementNS(ns, 'rect');
-    rect.setAttribute('x', x); rect.setAttribute('y', y);
-    rect.setAttribute('width', w); rect.setAttribute('height', h);
-    rect.setAttribute('rx', Math.min(RADIUS, w / 2, h / 2));
-    rect.setAttribute('fill', cor);
-    g.appendChild(rect);
-    const titulo = document.createElementNS(ns, 'title');
-    titulo.textContent = `${r.categoria}: ${formatarCompacto(r.total)} (${Math.round(r.fracao * 100)}%)`;
-    g.appendChild(titulo);
-    if (w > 70 && h > 30) {
-      g.appendChild(txt(ns, x + 9, y + 20, cor, r.categoria, 'tm-nome'));
-      g.appendChild(txt(ns, x + 9, y + 36, cor, `${formatarCompacto(r.total)} · ${Math.round(r.fracao * 100)}%`, 'tm-val'));
-    } else if (w > 40 && h > 18) {
-      g.appendChild(txt(ns, x + 6, y + 16, cor, `${Math.round(r.fracao * 100)}%`, 'tm-val'));
-    }
-    svg.appendChild(g);
-  }
-  const wrap = el('div', { class: 'treemap-wrap' });
-  wrap.appendChild(svg);
-  return wrap;
-}
-
-function txt(ns, x, y, fundo, conteudo, classe) {
-  const t = document.createElementNS(ns, 'text');
-  t.setAttribute('x', x); t.setAttribute('y', y);
-  t.setAttribute('class', classe);
-  t.setAttribute('fill', corTexto(fundo));
-  t.textContent = conteudo;
-  return t;
-}
-function corTexto(hex) {
-  const c = hex.replace('#', '');
-  const r = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16);
-  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? '#0e1411' : '#f3f5f4';
 }

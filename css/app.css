@@ -208,3 +208,28 @@
 .exc-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);border:1px solid var(--line-soft);border-radius:var(--r-sm);padding:8px 12px;font-size:13px}
 .exc-del{border:none;background:transparent;color:var(--red);cursor:pointer;font-size:14px}
 .exc-add{display:flex;gap:8px;align-items:center}
+
+/* ===== Orçamento ===== */
+.orc-resumo{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.orc-resumo .tnum{font-size:16px;font-weight:600}
+.orc-pct{font-size:14px;font-weight:700}
+.orc-track{width:100%;height:8px;background:var(--surface-3);border-radius:999px;overflow:hidden}
+.orc-fill{height:100%;border-radius:999px;transition:width .3s}
+.orc-fill.ok{background:var(--teal)}
+.orc-fill.alerta{background:#e0b54d}
+.orc-fill.estourado{background:var(--red)}
+.orc-pct.ok,.orc-cat-val.ok{color:var(--teal)}
+.orc-pct.alerta,.orc-cat-val.alerta{color:#e0b54d}
+.orc-pct.estourado,.orc-cat-val.estourado{color:var(--red)}
+
+.orc-list{display:flex;flex-direction:column;gap:16px}
+.orc-cat-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.orc-cat-nome{font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
+.orc-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0}
+.orc-tipo{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--txt-mute);background:var(--surface-3);padding:2px 6px;border-radius:4px;font-weight:600}
+.orc-cat-val{font-size:13px;font-weight:600}
+.orc-cat-sub{font-size:11.5px;color:var(--txt-mute);margin-top:5px}
+
+.orc-edit-list{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.orc-edit-row{display:flex;align-items:center;gap:8px}
+.orc-edit-cat{flex:1;display:flex;align-items:center;gap:7px;font-size:13px;min-width:0}

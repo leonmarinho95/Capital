@@ -10,6 +10,7 @@ const estado = {
   ganhos: [],
   fixos: [],
   cartaoConfig: null,
+  orcamento: null,
   carregando: true,
   erro: null
 };
@@ -40,6 +41,7 @@ export function definirMes(novoMes) { estado.mes = novoMes; notificar(); }
 export function navegarMes(delta) { estado.mes = deslocarMes(estado.mes, delta); notificar(); }
 
 export function definirCartaoConfig(cfg) { estado.cartaoConfig = cfg; notificar(); }
+export function definirOrcamento(orc) { estado.orcamento = orc; notificar(); }
 
 export function definirErro(erro) { estado.erro = erro; notificar(); }
 

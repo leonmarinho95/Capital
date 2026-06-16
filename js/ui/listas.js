@@ -4,7 +4,8 @@ import { el, vazio } from './dom.js';
 import { formatar } from '../money.js';
 import { diaMes } from '../dates.js';
 import { CATEGORIAS, corDaCategoria, rotuloForma } from '../validation.js';
-import { lancamentosDoMes, gastosPorConta, totaisDoMes } from '../selectors.js';
+import { lancamentosDoMes, gastosPorConta, totaisDoMes, gastosPorCategoria } from '../selectors.js';
+import { treemapDeCategorias } from './treemap.js';
 
 const parcelaTxt = (g) => (g.parcelasTotal > 1 ? ` (${g.parcela}/${g.parcelasTotal})` : '');
 
@@ -72,11 +73,19 @@ export function renderGastos(container, estado, aoEditar) {
         })))
     : vazio('Sem lançamentos.');
 
-  container.replaceChildren(
+  // treemap por categoria do mês (respeita o filtro de categoria? não —
+  // mostra o panorama do mês inteiro para dar contexto ao que está filtrado)
+  const cats = gastosPorCategoria(estado);
+  const treemap = cats.length
+    ? cartao('Por categoria', null, treemapDeCategorias(cats))
+    : null;
+
+  container.replaceChildren(...[
     filtros,
+    treemap,
     cartao('Por conta', formatar(totalFiltrado), corpoContas),
     cartao('Lançamentos', null, corpoLancs)
-  );
+  ].filter(Boolean));
 }
 
 export function renderGanhos(container, estado, aoEditar) {
