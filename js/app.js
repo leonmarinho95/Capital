@@ -106,8 +106,8 @@ function aoEditar(tipo, id) {
   if (item) abrirEdicao(tipo, item);
 }
 
-// Salva edição; se for parcela de crédito movida de fatura, desloca também
-// as parcelas SEGUINTES pelo mesmo número de meses ("esta e as seguintes").
+// Salva edição; se for parcela de crédito movida de fatura, recoloca também
+// as parcelas SEGUINTES, preservando o espaçamento de 1 mês entre elas.
 async function salvarComParcelas(tipo, id, dados) {
   const uid = estado.obter().uid;
   const cfg = estado.obter().cartaoConfig;
@@ -116,20 +116,25 @@ async function salvarComParcelas(tipo, id, dados) {
     const item = estado.obter().gastos.find((x) => x.id === id);
     if (item && item.compraId && item.parcelasTotal > 1) {
       const origem = item.faturaMes || (item.data ? item.data.slice(0, 7) : null);
-      const delta = mesesEntreYM(origem, dados.faturaMesEscolhida);
-      if (delta !== 0) {
+      const destino = dados.faturaMesEscolhida;
+      if (origem && destino && origem !== destino) {
         const mover = confirm(
-          `Mover esta parcela e as seguintes em ${delta > 0 ? '+' : ''}${delta} mês(es)?\n\n` +
-          'OK = mover esta e as parcelas seguintes\n' +
+          'Mover também as parcelas seguintes?\n\n' +
+          'OK = mover esta e as seguintes (mantendo 1 mês entre elas)\n' +
           'Cancelar = mover só esta parcela'
         );
-        // sempre salva esta
+        // salva a parcela atual na fatura escolhida
         await salvarLancamento(uid, tipo, id, dados, cfg);
+
         if (mover) {
-          const seguintes = estado.obter().gastos.filter((g) =>
-            g.compraId === item.compraId && g.parcela > item.parcela);
+          // recoloca cada parcela seguinte em destino + (posição relativa),
+          // garantindo o espaçamento de 1 mês independentemente do estado salvo.
+          const seguintes = estado.obter().gastos
+            .filter((g) => g.compraId === item.compraId && g.parcela > item.parcela)
+            .sort((a, b) => a.parcela - b.parcela);
           for (const g of seguintes) {
-            const novoFM = deslocarYM(g.faturaMes || g.data.slice(0, 7), delta);
+            const passos = g.parcela - item.parcela;          // 1, 2, 3...
+            const novoFM = deslocarYM(destino, passos);        // destino + passos meses
             await salvarLancamento(uid, 'gasto', g.id, {
               valorCentavos: g.valor, data: g.data, conta: g.conta,
               categoria: g.categoria, forma: 'credito', obs: g.obs,
@@ -144,12 +149,6 @@ async function salvarComParcelas(tipo, id, dados) {
   return salvarLancamento(uid, tipo, id, dados, cfg);
 }
 
-function mesesEntreYM(a, b) {
-  if (!a || !b) return 0;
-  const [a1, m1] = a.split('-').map(Number);
-  const [a2, m2] = b.split('-').map(Number);
-  return (a2 * 12 + m2) - (a1 * 12 + m1);
-}
 function deslocarYM(ym, k) {
   const [a, m] = ym.split('-').map(Number);
   const t = (a * 12 + (m - 1)) + k;
