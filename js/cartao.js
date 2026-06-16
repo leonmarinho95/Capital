@@ -26,14 +26,13 @@ export function deslocarFaturaMes(faturaMes, k) {
 
 /**
  * Data de fechamento (string 'YYYY-MM-DD') de uma fatura (mês 'YYYY-MM').
- * Exceção tem prioridade; senão usa o dia padrão no MÊS ANTERIOR ao da fatura.
+ * Exceção tem prioridade; senão usa o dia padrão NO MESMO mês da fatura.
+ * Ex.: fatura de junho fecha 01/jun (e vence 08/jun).
  */
 export function dataFechamentoDaFatura(faturaMes, diaPadrao, excecoes = {}) {
   const exc = excecoes[faturaMes];
   if (typeof exc === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(exc)) return exc;
-  // padrão: dia `diaPadrao` do mês anterior ao da fatura
-  const ant = deslocarFaturaMes(faturaMes, -1);
-  const [a, m] = ant.split('-').map(Number);
+  const [a, m] = faturaMes.split('-').map(Number);
   const dia = Math.min(diaPadrao, ultimoDiaDoMes(a, m));
   return `${a}-${pad(m)}-${pad(dia)}`;
 }

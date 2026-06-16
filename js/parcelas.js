@@ -31,10 +31,16 @@ export function gerarParcelas(base, nParcelas, diaFechamento, diaVencimento, exc
   for (let i = 0; i < n; i++) {
     const faturaMes = deslocarFaturaMes(fatura1, i);
     const dataPagamento = vencimentoDaFatura(faturaMes, diaVencimento);
+    // preserva a data da compra também na observação (visível e à prova de edição)
+    const compraBR = formatarDataBR(base.dataCompra);
+    const obsBase = base.obs ? base.obs.trim() : '';
+    const obsComCompra = obsBase
+      ? `${obsBase} · compra ${compraBR}`
+      : `compra ${compraBR}`;
     out.push({
       conta: base.conta,
       categoria: base.categoria,
-      obs: base.obs || '',
+      obs: obsComCompra,
       forma: 'credito',
       valorCentavos: valores[i],
       data: dataPagamento,        // contabilização (painel/treemap/fatura)
@@ -46,6 +52,13 @@ export function gerarParcelas(base, nParcelas, diaFechamento, diaVencimento, exc
     });
   }
   return out;
+}
+
+/** 'YYYY-MM-DD' -> 'DD/MM/AAAA'. */
+function formatarDataBR(iso) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso || '')) return iso || '';
+  const [a, m, d] = iso.split('-');
+  return `${d}/${m}/${a}`;
 }
 
 export function rotuloParcela(g) {

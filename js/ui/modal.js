@@ -80,14 +80,15 @@ export function abrirEdicao(tipo, item) {
   $('#seg-tipo').classList.add('hidden');
   definirTipo(tipo);
   $('#in-valor').value = String(centavosParaReais(item.valor) ?? '').replace('.', ',');
-  $('#in-data').value = item.data || '';
   if (tipo === 'gasto') {
     $('#in-conta').value = item.conta || '';
     $('#in-categoria').value = item.categoria || 'COMPRAS';
     $('#in-obs').value = item.obs || '';
     definirForma(item.forma || 'debito');
-    // crédito: permite corrigir a fatura (mês de pagamento)
     const ehCredito = item.forma === 'credito';
+    // no crédito, o campo de data mostra a data da COMPRA (não a de pagamento)
+    $('#in-data').value = ehCredito ? (item.dataCompra || item.data || '') : (item.data || '');
+    // crédito: permite corrigir a fatura (mês de pagamento)
     $('#campo-fatura').classList.toggle('hidden', !ehCredito);
     if (ehCredito) {
       const fm = item.faturaMes || (item.data ? item.data.slice(0, 7) : '');
@@ -98,6 +99,7 @@ export function abrirEdicao(tipo, item) {
         : 'Corrija se esta compra caiu na fatura errada';
     }
   } else {
+    $('#in-data').value = item.data || '';
     $('#in-conta').value = item.tipo || '';
   }
   msg('');
@@ -170,10 +172,19 @@ function coletar() {
       parcelas: (formaAtual === 'credito' && !ctx.id)
         ? Math.max(1, parseInt($('#in-parcelas').value, 10) || 1) : 1
     };
-    // edição de crédito: fatura escolhida (mês de pagamento)
+    // edição de crédito: o campo de data é a data da COMPRA.
     if (ctx.id && formaAtual === 'credito') {
+      const dataDigitada = $('#in-data').value;      // = data da compra
+      dados.dataCompra = dataDigitada;
+      // a data de pagamento (contabilização) é preservada do item original,
+      // a menos que a fatura seja explicitamente alterada abaixo.
+      dados.data = ctx.item?.data || dataDigitada;
       const fm = $('#in-fatura').value;
-      if (/^\d{4}-\d{2}$/.test(fm)) dados.faturaMesEscolhida = fm;
+      const fmOriginal = ctx.item?.faturaMes || (ctx.item?.data ? ctx.item.data.slice(0, 7) : '');
+      if (/^\d{4}-\d{2}$/.test(fm)) {
+        dados.faturaMes = fm;
+        if (fm !== fmOriginal) dados.faturaMesEscolhida = fm; // dispara recálculo/propagação
+      }
     }
     return dados;
   }
