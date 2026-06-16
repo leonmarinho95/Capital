@@ -1,7 +1,7 @@
 // Service worker — estratégia network-first para arquivos do app.
 // Sempre tenta a versão mais recente da rede; cai no cache só offline.
 // Assim, atualizações aparecem sem precisar limpar cache manualmente.
-const CACHE = 'capital-v14';
+const CACHE = 'capital-v15';
 const ASSETS = ['./','./index.html','./css/base.css','./css/app.css','./manifest.json',
  './js/app.js','./js/firebase.js','./js/config.js','./js/auth.js','./js/repository.js',
  './js/state.js','./js/selectors.js','./js/services.js','./js/validation.js',

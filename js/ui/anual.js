@@ -15,16 +15,27 @@ export function renderAnual(container, estado) {
   const temDados = estado.gastos.length > 0 || estado.ganhos.length > 0;
   if (!temDados) { container.replaceChildren(vazio('Sem dados para exibir ainda.')); return; }
 
-  container.replaceChildren(
-    seletorPeriodo(container, estado),
-    cardPatrimonio(estado),
-    cardResumo(estado),
-    cardGanhosGastos(estado),
-    cardCategorias(estado)
-  );
+  container.replaceChildren(...blocosPeriodo(estado, () => renderAnual(container, estado)));
 }
 
-function seletorPeriodo(container, estado) {
+/**
+ * Retorna os blocos do período (seletor + resumo + gráficos) como um array de
+ * nós, para serem embutidos em qualquer tela. `rerender` é chamado quando o
+ * usuário troca o período, para a tela hospedeira se redesenhar.
+ */
+export function blocosPeriodo(estado, rerender) {
+  const temDados = estado.gastos.length > 0 || estado.ganhos.length > 0;
+  if (!temDados) return [];
+  return [
+    seletorPeriodo(rerender),
+    cardResumo(estado),
+    cardPatrimonio(estado),
+    cardGanhosGastos(estado),
+    cardCategorias(estado)
+  ];
+}
+
+function seletorPeriodo(rerender) {
   const opcoes = [['6m', 6], ['12m', 12], ['Tudo', 'tudo']];
   const seg = el('div', { class: 'seg periodo-seg' },
     opcoes.map(([rotulo, val]) => {
@@ -32,7 +43,7 @@ function seletorPeriodo(container, estado) {
       const b = el('button', ativo ? { class: 'on' } : {}, rotulo);
       b.addEventListener('click', () => {
         periodo.janela = val;
-        renderAnual(container, estado);
+        if (rerender) rerender();
       });
       return b;
     }));

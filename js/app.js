@@ -7,7 +7,6 @@ import { rotuloMes } from './dates.js';
 import { salvarLancamento, excluirLancamento, excluirCompra, salvarFixo, excluirFixo } from './services.js';
 import { renderPainel } from './ui/painel.js';
 import { renderGastos, renderGanhos, renderFixos } from './ui/listas.js';
-import { renderAnual } from './ui/anual.js';
 import { renderCartao } from './ui/cartao.js';
 import { iniciarModal, abrirNovo, abrirEdicao } from './ui/modal.js';
 import { iniciarModalFixo, abrirNovoFixo, abrirEdicaoFixo } from './ui/modal-fixo.js';
@@ -222,6 +221,5 @@ function renderizar() {
   else if (abaAtiva === 'gastos') renderGastos($('#aba-gastos'), e, aoEditar);
   else if (abaAtiva === 'ganhos') renderGanhos($('#aba-ganhos'), e, aoEditar);
   else if (abaAtiva === 'fixos') renderFixos($('#aba-fixos'), e, aoEditarFixo, abrirNovoFixo);
-  else if (abaAtiva === 'anual') renderAnual($('#aba-anual'), e);
   else if (abaAtiva === 'cartao') renderCartao($('#aba-cartao'), e, aoSalvarCartaoConfig, aoNovoCredito, aoEditar);
 }
