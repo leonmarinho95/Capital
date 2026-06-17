@@ -66,6 +66,10 @@ function conectarDados(uid) {
   unsubscribers.push(
     repo.escutarConfig(uid, 'orcamento', (orc) => estado.definirOrcamento(orc))
   );
+  // metas de economia (guardadas como { lista: [...] })
+  unsubscribers.push(
+    repo.escutarConfig(uid, 'metas', (cfg) => estado.definirMetas(cfg && Array.isArray(cfg.lista) ? cfg.lista : []))
+  );
 }
 
 function desconectarDados() {
@@ -227,11 +231,13 @@ function renderizar() {
   else if (abaAtiva === 'ganhos') renderGanhos($('#aba-ganhos'), e, aoEditar);
   else if (abaAtiva === 'fixos') renderFixos($('#aba-fixos'), e, aoEditarFixo, abrirNovoFixo);
   else if (abaAtiva === 'cartao') renderCartao($('#aba-cartao'), e, aoSalvarCartaoConfig, aoNovoCredito, aoEditar);
-  else if (abaAtiva === 'orcamento') renderOrcamento($('#aba-orcamento'), e, aoSalvarOrcamento);
+  else if (abaAtiva === 'orcamento') renderOrcamento($('#aba-orcamento'), e, aoSalvarOrcamento, aoSalvarMetas);
 }
 
 function aoSalvarOrcamento(novo) {
-  // sobrescreve o documento inteiro (sem merge) para que categorias
-  // removidas do orçamento realmente desapareçam.
   return repo.salvarConfig(estado.obter().uid, 'orcamento', novo, false);
+}
+
+function aoSalvarMetas(lista) {
+  return repo.salvarConfig(estado.obter().uid, 'metas', { lista }, false);
 }

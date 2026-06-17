@@ -233,3 +233,21 @@
 .orc-edit-list{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
 .orc-edit-row{display:flex;align-items:center;gap:8px}
 .orc-edit-cat{flex:1;display:flex;align-items:center;gap:7px;font-size:13px;min-width:0}
+
+/* ===== Metas de economia ===== */
+.meta-list{display:flex;flex-direction:column;gap:16px}
+.meta-card{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:var(--r-md);padding:14px}
+.meta-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.meta-nome{font-size:15px;font-weight:600}
+.meta-prazo{font-size:11.5px;color:var(--txt-mute);margin-top:2px}
+.meta-del{border:none;background:transparent;color:var(--txt-mute);cursor:pointer;font-size:14px;padding:2px 6px}
+.meta-del:active{color:var(--red)}
+.meta-linha{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.meta-rotulo{font-size:12px;color:var(--txt-dim)}
+.meta-linha .tnum{font-size:13px;font-weight:600}
+.meta-ritmo{font-size:12px;font-weight:600;margin-top:8px}
+.meta-ritmo.ok{color:var(--teal)}
+.meta-ritmo.alerta{color:#e0b54d}
+.meta-ritmo.estourado{color:var(--red)}
+.orc-fill.mes{background:var(--teal-deep)}
+.meta-form-row{display:flex;gap:8px}

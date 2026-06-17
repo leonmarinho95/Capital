@@ -11,6 +11,7 @@ const estado = {
   fixos: [],
   cartaoConfig: null,
   orcamento: null,
+  metas: null,
   carregando: true,
   erro: null
 };
@@ -42,6 +43,7 @@ export function navegarMes(delta) { estado.mes = deslocarMes(estado.mes, delta);
 
 export function definirCartaoConfig(cfg) { estado.cartaoConfig = cfg; notificar(); }
 export function definirOrcamento(orc) { estado.orcamento = orc; notificar(); }
+export function definirMetas(metas) { estado.metas = metas; notificar(); }
 
 export function definirErro(erro) { estado.erro = erro; notificar(); }
 

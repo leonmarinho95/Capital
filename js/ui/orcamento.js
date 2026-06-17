@@ -4,13 +4,17 @@ import { formatar, reaisParaCentavos, centavosParaReais } from '../money.js';
 import { CATEGORIAS, corDaCategoria } from '../validation.js';
 import { rotuloMes } from '../dates.js';
 import { avaliarOrcamento, totaisMensais } from '../orcamento.js';
+import { blocosMetas } from './metas.js';
 
-export function renderOrcamento(container, estado, aoSalvarOrcamento) {
+export function renderOrcamento(container, estado, aoSalvarOrcamento, aoSalvarMetas) {
   if (estado.carregando) { container.replaceChildren(vazio('Carregando…')); return; }
+
+  const filhos = [];
+  // metas de economia primeiro
+  if (aoSalvarMetas) filhos.push(...blocosMetas(estado, aoSalvarMetas));
 
   const orcamento = estado.orcamento || {};
   const linhas = avaliarOrcamento(estado.gastos, orcamento, estado.mes);
-  const filhos = [];
 
   // resumo mensal (só categorias de teto mensal)
   if (linhas.some((l) => l.tipo === 'mensal')) {
