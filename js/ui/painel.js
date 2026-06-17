@@ -40,34 +40,44 @@ export function renderPainel(container, estado, aoLancarVencimento, aoResolverVe
   container.replaceChildren(...filhos);
 }
 
-// Banner de lembrete de atualização: aparece se passaram >=7 dias desde
-// a última vez que o usuário marcou "atualizado".
+// Indicador de atualização: discreto sempre, vira alerta destacado aos 7+ dias.
 function bannerAtualizacao(estado, aoMarcar) {
   if (!aoMarcar) return null;
   const ultima = estado.appConfig?.ultimaAtualizacao; // 'YYYY-MM-DD' ou timestamp ms
-  let dias;
-  if (!ultima) {
-    dias = null; // nunca marcou
-  } else {
+  let dias = null;
+  if (ultima) {
     const base = typeof ultima === 'number' ? new Date(ultima) : new Date(ultima + 'T00:00:00');
     dias = Math.floor((Date.now() - base.getTime()) / 86400000);
   }
-  // só mostra se nunca marcou ou se passaram 7+ dias
-  if (dias !== null && dias < 7) return null;
 
-  const texto = dias === null
-    ? 'Mantenha seus dados em dia. Marque quando atualizar.'
-    : `Faz ${dias} dias que você não atualiza seus dados.`;
+  const alerta = dias === null || dias >= 7;
 
-  const btn = el('button', { class: 'lembrete-btn' }, 'Marquei como atualizado');
+  // texto da situação
+  let texto;
+  if (dias === null) texto = 'Você ainda não sinalizou uma atualização.';
+  else if (dias === 0) texto = 'Atualizado hoje.';
+  else if (dias === 1) texto = 'Atualizado ontem.';
+  else texto = `Atualizado há ${dias} dias.`;
+
+  const btn = el('button', { class: alerta ? 'lembrete-btn' : 'lembrete-btn-discreto' },
+    alerta ? 'Marquei como atualizado' : 'Atualizar');
   btn.addEventListener('click', async () => {
-    btn.disabled = true; btn.textContent = 'Salvando…';
-    try { await aoMarcar(); } catch { btn.disabled = false; btn.textContent = 'Marquei como atualizado'; }
+    btn.disabled = true; btn.textContent = '…';
+    try { await aoMarcar(); } catch { btn.disabled = false; btn.textContent = alerta ? 'Marquei como atualizado' : 'Atualizar'; }
   });
 
-  return el('section', { class: 'lembrete' }, [
-    el('div', { class: 'lembrete-icone' }, '🔔'),
-    el('div', { class: 'lembrete-texto' }, texto),
+  if (alerta) {
+    // estado destacado (7+ dias ou nunca marcou)
+    const aviso = dias === null ? texto : `Faz ${dias} dias que você não atualiza seus dados.`;
+    return el('section', { class: 'lembrete' }, [
+      el('div', { class: 'lembrete-icone' }, '🔔'),
+      el('div', { class: 'lembrete-texto' }, aviso),
+      btn
+    ]);
+  }
+  // estado discreto (em dia)
+  return el('div', { class: 'lembrete-discreto' }, [
+    el('span', { class: 'lembrete-discreto-txt' }, texto),
     btn
   ]);
 }
