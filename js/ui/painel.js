@@ -5,7 +5,7 @@ import { vencendoEmBreve, rotuloProximidade } from '../vencimentos.js';
 import { totaisDoMes, economiaMesAnterior } from '../selectors.js';
 import { blocosPeriodo } from './anual.js';
 
-export function renderPainel(container, estado, aoLancarVencimento, aoResolverVencimento) {
+export function renderPainel(container, estado, aoLancarVencimento, aoResolverVencimento, aoMarcarAtualizado) {
   if (estado.carregando) {
     container.replaceChildren(vazio('Carregando…'));
     return;
@@ -26,15 +26,50 @@ export function renderPainel(container, estado, aoLancarVencimento, aoResolverVe
     miniCard('out', 'Gastos', t.gastos)
   ]);
 
-  const filhos = [hero, duo];
+  const filhos = [];
+  const lembrete = bannerAtualizacao(estado, aoMarcarAtualizado);
+  if (lembrete) filhos.push(lembrete);
+  filhos.push(hero, duo);
   const alertas = cardVencimentos(estado, aoLancarVencimento, aoResolverVencimento);
   if (alertas) filhos.push(alertas);
   // gráficos do período (filtro + resumo + patrimônio + ganhos×gastos + treemap),
   // reaproveitados do antigo Anual; o seletor re-renderiza o próprio painel.
   const periodo = blocosPeriodo(estado, () =>
-    renderPainel(container, estado, aoLancarVencimento, aoResolverVencimento));
+    renderPainel(container, estado, aoLancarVencimento, aoResolverVencimento, aoMarcarAtualizado));
   filhos.push(...periodo);
   container.replaceChildren(...filhos);
+}
+
+// Banner de lembrete de atualização: aparece se passaram >=7 dias desde
+// a última vez que o usuário marcou "atualizado".
+function bannerAtualizacao(estado, aoMarcar) {
+  if (!aoMarcar) return null;
+  const ultima = estado.appConfig?.ultimaAtualizacao; // 'YYYY-MM-DD' ou timestamp ms
+  let dias;
+  if (!ultima) {
+    dias = null; // nunca marcou
+  } else {
+    const base = typeof ultima === 'number' ? new Date(ultima) : new Date(ultima + 'T00:00:00');
+    dias = Math.floor((Date.now() - base.getTime()) / 86400000);
+  }
+  // só mostra se nunca marcou ou se passaram 7+ dias
+  if (dias !== null && dias < 7) return null;
+
+  const texto = dias === null
+    ? 'Mantenha seus dados em dia. Marque quando atualizar.'
+    : `Faz ${dias} dias que você não atualiza seus dados.`;
+
+  const btn = el('button', { class: 'lembrete-btn' }, 'Marquei como atualizado');
+  btn.addEventListener('click', async () => {
+    btn.disabled = true; btn.textContent = 'Salvando…';
+    try { await aoMarcar(); } catch { btn.disabled = false; btn.textContent = 'Marquei como atualizado'; }
+  });
+
+  return el('section', { class: 'lembrete' }, [
+    el('div', { class: 'lembrete-icone' }, '🔔'),
+    el('div', { class: 'lembrete-texto' }, texto),
+    btn
+  ]);
 }
 
 // Bloco "Vencem em breve" — só aparece se houver vencimentos na janela.
