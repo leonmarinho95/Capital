@@ -70,6 +70,10 @@ function conectarDados(uid) {
   unsubscribers.push(
     repo.escutarConfig(uid, 'metas', (cfg) => estado.definirMetas(cfg && Array.isArray(cfg.lista) ? cfg.lista : []))
   );
+  // config geral do app (ex.: última atualização para o lembrete)
+  unsubscribers.push(
+    repo.escutarConfig(uid, 'app', (cfg) => estado.definirAppConfig(cfg))
+  );
 }
 
 function desconectarDados() {
@@ -226,7 +230,7 @@ function renderizar() {
     return;
   }
 
-  if (abaAtiva === 'painel') renderPainel($('#aba-painel'), e, aoLancarVencimento, aoResolverVencimento);
+  if (abaAtiva === 'painel') renderPainel($('#aba-painel'), e, aoLancarVencimento, aoResolverVencimento, aoMarcarAtualizado);
   else if (abaAtiva === 'gastos') renderGastos($('#aba-gastos'), e, aoEditar);
   else if (abaAtiva === 'ganhos') renderGanhos($('#aba-ganhos'), e, aoEditar);
   else if (abaAtiva === 'fixos') renderFixos($('#aba-fixos'), e, aoEditarFixo, abrirNovoFixo);
@@ -240,4 +244,11 @@ function aoSalvarOrcamento(novo) {
 
 function aoSalvarMetas(lista) {
   return repo.salvarConfig(estado.obter().uid, 'metas', { lista }, false);
+}
+
+// Reseta o contador do lembrete de atualização para hoje.
+function aoMarcarAtualizado() {
+  const hoje = new Date();
+  const iso = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
+  return repo.salvarConfig(estado.obter().uid, 'app', { ultimaAtualizacao: iso });
 }
