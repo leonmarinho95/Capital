@@ -251,3 +251,10 @@
 .meta-ritmo.estourado{color:var(--red)}
 .orc-fill.mes{background:var(--teal-deep)}
 .meta-form-row{display:flex;gap:8px}
+
+/* ===== Lembrete de atualização ===== */
+.lembrete{display:flex;align-items:center;gap:12px;background:var(--teal-glow);border:1px solid rgba(77,182,164,.3);border-radius:var(--r-md);padding:12px 14px}
+.lembrete-icone{font-size:18px;flex-shrink:0}
+.lembrete-texto{flex:1;font-size:13px;color:var(--txt)}
+.lembrete-btn{flex-shrink:0;padding:7px 12px;border:1px solid var(--teal-deep);border-radius:999px;background:var(--teal);color:#08110f;font:600 12px var(--body);cursor:pointer}
+.lembrete-btn:disabled{opacity:.6}
