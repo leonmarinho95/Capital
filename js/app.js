@@ -1,6 +1,6 @@
 // js/app.js — orquestrador. Liga auth → repositório → estado → telas.
 import { $, $$ } from './ui/dom.js';
-import { observarSessao, entrar, sair } from './auth.js';
+import { observarSessao, entrarComGoogle, vincularGoogle, sair } from './auth.js';
 import * as estado from './state.js';
 import * as repo from './repository.js';
 import { rotuloMes } from './dates.js';
@@ -17,18 +17,31 @@ let unsubscribers = []; // listeners do Firestore, limpos no logout
 let abaAtiva = 'painel';
 
 // ---------- AUTENTICAÇÃO ----------
-$('#auth-entrar').addEventListener('click', tentarEntrar);
-$('#auth-senha').addEventListener('keydown', (e) => { if (e.key === 'Enter') tentarEntrar(); });
+$('#auth-google').addEventListener('click', tentarEntrarGoogle);
+$('#auth-vincular').addEventListener('click', tentarVincular);
+$('#auth-senha').addEventListener('keydown', (e) => { if (e.key === 'Enter') tentarVincular(); });
 
-async function tentarEntrar() {
+async function tentarEntrarGoogle() {
   const msg = $('#auth-msg'); msg.textContent = '';
-  const btn = $('#auth-entrar'); btn.disabled = true; btn.textContent = 'Entrando…';
+  const btn = $('#auth-google'); btn.disabled = true;
+  const txt = btn.innerHTML; btn.textContent = 'Entrando…';
   try {
-    await entrar($('#auth-email').value, $('#auth-senha').value);
+    await entrarComGoogle();
   } catch (e) {
     msg.textContent = e.message;
-  } finally {
-    btn.disabled = false; btn.textContent = 'Entrar';
+    btn.disabled = false; btn.innerHTML = txt;
+  }
+}
+
+async function tentarVincular() {
+  const msg = $('#auth-msg'); msg.textContent = '';
+  const btn = $('#auth-vincular'); btn.disabled = true;
+  const txt = btn.textContent; btn.textContent = 'Vinculando…';
+  try {
+    await vincularGoogle($('#auth-email').value, $('#auth-senha').value);
+  } catch (e) {
+    msg.textContent = e.message;
+    btn.disabled = false; btn.textContent = txt;
   }
 }
 
@@ -45,7 +58,6 @@ observarSessao((usuario) => {
     estado.limpar();
     $('#tela-app').classList.add('hidden');
     $('#tela-auth').classList.remove('hidden');
-    $('#auth-senha').value = '';
   }
 });
 
