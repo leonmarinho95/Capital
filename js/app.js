@@ -1,6 +1,6 @@
 // js/app.js — orquestrador. Liga auth → repositório → estado → telas.
 import { $, $$ } from './ui/dom.js';
-import { observarSessao, entrarComGoogle, vincularGoogle, sair } from './auth.js';
+import { observarSessao, entrarComGoogle, sair } from './auth.js';
 import * as estado from './state.js';
 import * as repo from './repository.js';
 import { rotuloMes } from './dates.js';
@@ -18,8 +18,6 @@ let abaAtiva = 'painel';
 
 // ---------- AUTENTICAÇÃO ----------
 $('#auth-google').addEventListener('click', tentarEntrarGoogle);
-$('#auth-vincular').addEventListener('click', tentarVincular);
-$('#auth-senha').addEventListener('keydown', (e) => { if (e.key === 'Enter') tentarVincular(); });
 
 async function tentarEntrarGoogle() {
   const msg = $('#auth-msg'); msg.textContent = '';
@@ -30,18 +28,6 @@ async function tentarEntrarGoogle() {
   } catch (e) {
     msg.textContent = e.message;
     btn.disabled = false; btn.innerHTML = txt;
-  }
-}
-
-async function tentarVincular() {
-  const msg = $('#auth-msg'); msg.textContent = '';
-  const btn = $('#auth-vincular'); btn.disabled = true;
-  const txt = btn.textContent; btn.textContent = 'Vinculando…';
-  try {
-    await vincularGoogle($('#auth-email').value, $('#auth-senha').value);
-  } catch (e) {
-    msg.textContent = e.message;
-    btn.disabled = false; btn.textContent = txt;
   }
 }
 
