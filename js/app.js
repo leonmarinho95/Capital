@@ -207,12 +207,20 @@ function aoSalvarCartaoConfig(dados) {
   return repo.salvarConfig(estado.obter().uid, 'cartao', dados);
 }
 
-// "Já lançado": marca o vencimento como resolvido no mês atual (volta mês que vem).
+// Marca/desmarca um fixo como resolvido (conferido) no mês atual.
+// Mesma marca usada pelo "Já lançado" (alertas) e pelo checklist (aba Fixos).
+function aoAlternarResolvido(fixoId, mes, resolvido) {
+  const alvo = mes || new Date().toISOString().slice(0, 7);
+  const resolvidos = { ...(estado.obter().appConfig?.resolvidos || {}) };
+  const chave = `${fixoId}:${alvo}`;
+  if (resolvido) resolvidos[chave] = true;
+  else delete resolvidos[chave];
+  return repo.salvarConfig(estado.obter().uid, 'app', { resolvidos });
+}
+
+// "Já lançado" (alertas): marca como resolvido no mês atual.
 function aoResolverVencimento(fixoId) {
-  const mesAtual = new Date().toISOString().slice(0, 7);
-  const resolvidos = { ...(estado.obter().cartaoConfig?.resolvidos || {}) };
-  resolvidos[`${fixoId}:${mesAtual}`] = true;
-  return repo.salvarConfig(estado.obter().uid, 'cartao', { resolvidos });
+  return aoAlternarResolvido(fixoId, null, true);
 }
 
 // ---------- RENDER ----------
@@ -231,7 +239,7 @@ function renderizar() {
   if (abaAtiva === 'painel') renderPainel($('#aba-painel'), e, aoLancarVencimento, aoResolverVencimento, aoMarcarAtualizado);
   else if (abaAtiva === 'gastos') renderGastos($('#aba-gastos'), e, aoEditar);
   else if (abaAtiva === 'ganhos') renderGanhos($('#aba-ganhos'), e, aoEditar);
-  else if (abaAtiva === 'fixos') renderFixos($('#aba-fixos'), e, aoEditarFixo, abrirNovoFixo);
+  else if (abaAtiva === 'fixos') renderFixos($('#aba-fixos'), e, aoEditarFixo, abrirNovoFixo, aoAlternarResolvido);
   else if (abaAtiva === 'cartao') renderCartao($('#aba-cartao'), e, aoSalvarCartaoConfig, aoNovoCredito, aoEditar);
   else if (abaAtiva === 'orcamento') renderOrcamento($('#aba-orcamento'), e, aoSalvarOrcamento, aoSalvarMetas);
 }

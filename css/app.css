@@ -270,3 +270,19 @@
 .btn-google:active{background:#f1f3f4}
 .btn-google svg{flex-shrink:0}
 
+
+/* checklist de conferência (aba Fixos) */
+.fx-linha{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line-soft)}
+.fx-linha:last-child{border-bottom:none}
+.fx-check-wrap{display:flex;align-items:center;flex-shrink:0;cursor:pointer}
+.fx-check{width:20px;height:20px;accent-color:var(--teal);cursor:pointer}
+.fx-info{flex:1;min-width:0;cursor:pointer}
+.fx-titulo{font-size:14px;font-weight:600}
+.fx-sub{font-size:12px;color:var(--txt-mute);margin-top:1px}
+.fx-valor{font-size:14px;font-weight:600;color:var(--txt-dim);flex-shrink:0}
+.fx-linha.feito .fx-titulo,.fx-linha.feito .fx-valor{text-decoration:line-through;opacity:.55}
+
+/* botão de ordenação nas listas */
+.card-head-right{display:flex;align-items:center;gap:10px}
+.ordena-btn{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:999px;color:var(--txt-dim);font:600 11.5px var(--body);padding:5px 11px;cursor:pointer}
+.ordena-btn:active{background:var(--surface-3)}

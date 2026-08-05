@@ -10,7 +10,25 @@ import { treemapDeCategorias } from './treemap.js';
 const parcelaTxt = (g) => (g.parcelasTotal > 1 ? ` (${g.parcela}/${g.parcelasTotal})` : '');
 
 // estado local de filtro da tela de gastos (não pertence ao estado global)
-const filtroGastos = { categoria: '', busca: '' };
+const filtroGastos = { categoria: '', busca: '', ordem: 'data' };
+const filtroGanhos = { ordem: 'data' };
+
+// Cabeçalho de card com botão de ordenação (data <-> valor).
+function cabecalhoOrdenavel(titulo, extra, filtro, aoTrocar) {
+  const btn = el('button', { class: 'ordena-btn' },
+    filtro.ordem === 'valor' ? '↓ valor' : '↓ data');
+  btn.addEventListener('click', () => {
+    filtro.ordem = filtro.ordem === 'valor' ? 'data' : 'valor';
+    aoTrocar();
+  });
+  return el('div', { class: 'card-head' }, [
+    el('h2', {}, titulo),
+    el('div', { class: 'card-head-right' }, [
+      extra ? el('span', { class: 'muted' }, extra) : null,
+      btn
+    ].filter(Boolean))
+  ]);
+}
 
 function linha({ cor, titulo, sub, valor, classeValor, onClick }) {
   return el('div', { class: 'row', ...(onClick ? { onclick: onClick } : {}) }, [
@@ -84,13 +102,16 @@ export function renderGastos(container, estado, aoEditar) {
     filtros,
     treemap,
     cartao('Por conta', formatar(totalFiltrado), corpoContas),
-    cartao('Lançamentos', null, corpoLancs)
+    el('section', { class: 'card' }, [
+      cabecalhoOrdenavel('Lançamentos', null, filtroGastos, () => renderGastos(container, estado, aoEditar)),
+      corpoLancs
+    ])
   ].filter(Boolean));
 }
 
 export function renderGanhos(container, estado, aoEditar) {
   const t = totaisDoMes(estado);
-  const lancs = lancamentosDoMes(estado, 'ganhos');
+  const lancs = lancamentosDoMes(estado, 'ganhos', filtroGanhos);
   const corpo = lancs.length
     ? el('div', { class: 'rows' }, lancs.map((g) =>
         linha({
@@ -99,27 +120,56 @@ export function renderGanhos(container, estado, aoEditar) {
           onClick: () => aoEditar('ganho', g.id)
         })))
     : vazio('Sem ganhos neste mês.');
-  container.replaceChildren(cartao('Ganhos do mês', formatar(t.ganhos), corpo));
+  container.replaceChildren(el('section', { class: 'card' }, [
+    cabecalhoOrdenavel('Ganhos do mês', formatar(t.ganhos), filtroGanhos, () => renderGanhos(container, estado, aoEditar)),
+    corpo
+  ]));
 }
 
-export function renderFixos(container, estado, aoEditarFixo, aoNovoFixo) {
+export function renderFixos(container, estado, aoEditarFixo, aoNovoFixo, aoAlternarResolvido) {
+  const mes = estado.mes;
+  const nova = estado.appConfig?.resolvidos || {};
+  const antiga = estado.cartaoConfig?.resolvidos || {};
+  const resolvidos = { ...antiga, ...nova };
   const lista = [...estado.fixos].sort((a, b) => (Number(a.vencimento) || 0) - (Number(b.vencimento) || 0));
+
+  const feitos = lista.filter((f) => resolvidos[`${f.id}:${mes}`]).length;
+
   const corpo = lista.length
     ? el('div', { class: 'rows' }, lista.map((f) => {
         const valor = Number.isInteger(f.valor) ? formatar(f.valor) : 'A definir';
         const sub = [f.vencimento ? `vence dia ${f.vencimento}` : null, f.categoria, f.lembrete ? 'só lembrete' : null, f.fatura].filter(Boolean).join(' · ');
-        return linha({
-          cor: 'var(--teal-deep)', titulo: f.gasto, sub, valor,
-          onClick: aoEditarFixo ? () => aoEditarFixo(f.id) : null
+        const conferido = !!resolvidos[`${f.id}:${mes}`];
+
+        // checkbox de conferência (não abre a edição)
+        const chk = el('input', { type: 'checkbox', class: 'fx-check' });
+        chk.checked = conferido;
+        chk.addEventListener('click', (e) => e.stopPropagation());
+        chk.addEventListener('change', () => {
+          if (aoAlternarResolvido) aoAlternarResolvido(f.id, mes, chk.checked);
         });
+
+        const corpoLinha = el('div', { class: `fx-linha ${conferido ? 'feito' : ''}` }, [
+          el('label', { class: 'fx-check-wrap' }, [chk]),
+          el('div', { class: 'fx-info', onclick: aoEditarFixo ? () => aoEditarFixo(f.id) : null }, [
+            el('div', { class: 'fx-titulo' }, f.gasto),
+            el('div', { class: 'fx-sub' }, sub)
+          ]),
+          el('div', { class: 'fx-valor tnum' }, valor)
+        ]);
+        return corpoLinha;
       }))
     : vazio('Nenhum gasto fixo. Toque em + para adicionar.');
 
   const botaoNovo = el('button', { class: 'btn-add-fixo' }, '+ Adicionar gasto fixo');
   if (aoNovoFixo) botaoNovo.addEventListener('click', aoNovoFixo);
 
+  const titulo = lista.length
+    ? `Conferência do mês · ${feitos}/${lista.length}`
+    : 'Gastos fixos mensais';
+
   container.replaceChildren(
-    cartao('Gastos fixos mensais', null, corpo),
+    cartao(titulo, null, corpo),
     botaoNovo
   );
 }

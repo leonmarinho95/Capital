@@ -85,8 +85,10 @@ function bannerAtualizacao(estado, aoMarcar) {
 // Bloco "Vencem em breve" — só aparece se houver vencimentos na janela.
 function cardVencimentos(estado, aoLancar, aoResolver) {
   const proximos = vencendoEmBreve(estado.fixos, new Date(), 5);
-  // filtra os já resolvidos neste mês
-  const resolvidos = estado.cartaoConfig?.resolvidos || {};
+  // filtra os já resolvidos neste mês (marca unificada com o checklist)
+  const nova = estado.appConfig?.resolvidos || {};
+  const antiga = estado.cartaoConfig?.resolvidos || {};
+  const resolvidos = { ...antiga, ...nova };
   const mesAtual = new Date().toISOString().slice(0, 7);
   const visiveis = proximos.filter((v) => !resolvidos[`${v.id}:${mesAtual}`]);
   if (visiveis.length === 0) return null;

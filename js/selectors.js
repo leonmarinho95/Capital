@@ -71,5 +71,12 @@ export function lancamentosDoMes(estado, tipo, filtro = {}) {
         (g.conta || '').toLowerCase().includes(b) || (g.obs || '').toLowerCase().includes(b));
     }
   }
-  return [...lista].sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+  const arr = [...lista];
+  if (filtro.ordem === 'valor') {
+    // maior -> menor; empate mantém data desc (agrupa iguais lado a lado)
+    arr.sort((a, b) => (b.valor || 0) - (a.valor || 0) || (b.data || '').localeCompare(a.data || ''));
+  } else {
+    arr.sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+  }
+  return arr;
 }
